@@ -1,5 +1,5 @@
 {
-  "name": "threejs",
+  "name": "lab_3d",
   "version": "1.0.0",
   "dependencies": {
     "@babel/polyfill": "^7.0.0"
