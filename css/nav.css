@@ -1,0 +1,38 @@
+.nav {
+    position: fixed;
+    top: 5%;
+    right: 40px;
+    background-color: rgba(217, 237, 238, 0.6);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+}
+
+.nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav li:hover {
+    background-color: #22aa88;
+    transition: all linear 0.2s;
+}
+
+.nav li:hover a {
+    color: white;
+}
+
+.nav li a {
+    font-size: 14px;
+    border-radius: 3px;
+    color: #656d72;
+    cursor: pointer;
+    display: block;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+    text-align: center;
+}

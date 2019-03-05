@@ -3,6 +3,11 @@
 let scene, camera, renderer, controls, threeEvent,
     clock = new THREE.Clock(), animatingAction, animateActions = {}
 
+const cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2, Wall.lengthLong * 1.8)
+const cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, Wall.lengthLong / 2)
+
+let area1, area2, area3, area9, area12
+
 draw()
 
 function draw() {
@@ -43,12 +48,11 @@ function initScene() {
 
 function initCamera() {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-    camera.position.set(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2, Wall.lengthLong * 1.8)
-    camera.lookAt(new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, 0))
+    camera.position.copy(cameraInitPosition)
 }
 
 function initRenderer() {
-    renderer = new THREE.WebGLRenderer({antialias: true})
+    renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0xFFF5EE)
     renderer.shadowMap.enabled = true
@@ -80,7 +84,7 @@ function initLights() {
 }
 
 function initFloor() {
-    let floorMaterial = new THREE.MeshPhongMaterial({color: 0xcfcfcf})
+    let floorMaterial = new THREE.MeshPhongMaterial({ color: 0xcfcfcf })
     let floorUp = new THREE.Mesh(new THREE.BoxGeometry(Floor.lengthUp, Floor.thickness, Floor.widthUp), floorMaterial)
     floorUp.receiveShadow = true
     floorUp.position.set(Wall.thickness * 2 + Wall.lengthLong * 1.5, Floor.thickness / 2, Wall.thickness + Floor.widthUp / 2)
@@ -95,7 +99,7 @@ function initGround() {
     let groundMesh = new THREE.Mesh(
         new THREE.BoxGeometry(Wall.lengthLong * 3 + Wall.thickness * 4 + Corridor.width * 2,
             Wall.thickness, Wall.lengthLong + Corridor.width * 2),
-        new THREE.MeshPhongMaterial({color: 0xdddddd, map: texture})
+        new THREE.MeshPhongMaterial({ color: 0xdddddd, map: texture })
     )
     groundMesh.position.set(Wall.lengthLong / 2 + Wall.thickness, Wall.thickness / -2, Wall.lengthLong / 2)
     groundMesh.receiveShadow = true
@@ -103,7 +107,7 @@ function initGround() {
 }
 
 function initWalls() {
-    let wallMaterial = new THREE.MeshPhongMaterial({color: 0xacbdc7, transparent: true, opacity: Wall.opacity})
+    let wallMaterial = new THREE.MeshPhongMaterial({ color: 0xacbdc7, transparent: true, opacity: Wall.opacity })
     let wallVerticalSide = new THREE.BoxGeometry(Wall.thickness, Wall.height, Wall.lengthLong)
     let wallHorizontal = new THREE.BoxGeometry(Wall.lengthLong, Wall.height, Wall.thickness)
 
@@ -253,11 +257,11 @@ function initDoors() {
         }, {
             property: "door-entry.position",
             values: [Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2,
-                Door.height / 2, Wall.lengthLong - Wall.thickness / 2,
-                Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2 / Math.sqrt(2),
-                Door.height / 2, Wall.lengthLong - Wall.thickness / 2 - Door.widthEntry / 2 / Math.sqrt(2),
-                Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.thickness / 2, Door.height / 2,
-                Wall.lengthLong - Wall.thickness / 2 - Door.widthEntry / 2]
+            Door.height / 2, Wall.lengthLong - Wall.thickness / 2,
+            Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2 / Math.sqrt(2),
+            Door.height / 2, Wall.lengthLong - Wall.thickness / 2 - Door.widthEntry / 2 / Math.sqrt(2),
+            Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.thickness / 2, Door.height / 2,
+            Wall.lengthLong - Wall.thickness / 2 - Door.widthEntry / 2]
         }],
         loop: THREE.LoopPingPong,
         loopCount: 2,
@@ -285,10 +289,10 @@ function initDoors() {
         }, {
             property: "door-exit.position",
             values: [Wall.thickness / 2, Door.height / 2, Wall.thickness + Door.gapExit + Door.widthExit / 2,
-                Wall.thickness / 2 + Door.widthExit / 2 / Math.sqrt(2), Door.height / 2,
-                Wall.thickness + Door.gapExit + Door.widthExit - Door.widthExit / 2 / Math.sqrt(2),
-                Wall.thickness / 2 + Door.widthExit / 2, Door.height / 2,
-                Wall.thickness + Door.gapExit + Door.widthExit - Door.thickness / 2]
+            Wall.thickness / 2 + Door.widthExit / 2 / Math.sqrt(2), Door.height / 2,
+            Wall.thickness + Door.gapExit + Door.widthExit - Door.widthExit / 2 / Math.sqrt(2),
+            Wall.thickness / 2 + Door.widthExit / 2, Door.height / 2,
+            Wall.thickness + Door.gapExit + Door.widthExit - Door.thickness / 2]
         }],
         loop: THREE.LoopPingPong,
         loopCount: 2,
@@ -318,11 +322,11 @@ function initDoors() {
         }, {
             property: "door-secondary.position",
             values: [Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong,
-                Door.height / 2, Wall.lengthLong - Wall.thickness / 2,
-                Door.gapSecondary + Door.widthSecondary / 2 / Math.sqrt(2) - Wall.lengthLong,
-                Door.height / 2, Wall.lengthLong - Wall.thickness / 2 - Door.widthSecondary / 2 / Math.sqrt(2),
-                Door.gapSecondary + Door.thickness / 2 - Wall.lengthLong,
-                Door.height / 2, Wall.lengthLong - Wall.thickness / 2 - Door.widthSecondary / 2]
+            Door.height / 2, Wall.lengthLong - Wall.thickness / 2,
+            Door.gapSecondary + Door.widthSecondary / 2 / Math.sqrt(2) - Wall.lengthLong,
+            Door.height / 2, Wall.lengthLong - Wall.thickness / 2 - Door.widthSecondary / 2 / Math.sqrt(2),
+            Door.gapSecondary + Door.thickness / 2 - Wall.lengthLong,
+            Door.height / 2, Wall.lengthLong - Wall.thickness / 2 - Door.widthSecondary / 2]
         }],
         loop: THREE.LoopPingPong,
         loopCount: 2,
@@ -445,12 +449,12 @@ function initShowBoards() {
 // 1 - 需求响应规约测试区域
 function initArea1() {
     let area1BoardCenterX = Wall.lengthLong + Wall.thickness * 2 + Board.gapDown + Board.lengthDown * 1.5 + Board.intervalDown
-    let desk = new Desk({length: Area1.deskLength, height: Area1.deskHeight, width: Area1.deskWidth})
+    let desk = new Desk({ length: Area1.deskLength, height: Area1.deskHeight, width: Area1.deskWidth })
     desk.position.set(area1BoardCenterX, Area1.deskHeight / 2,
         Wall.lengthLong - Wall.thickness - Area1.deskGap - Area1.deskWidth / 2)
     scene.add(desk)
 
-    let computer = new Computer({length: PC.length, width: PC.width, height: PC.height})
+    let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(area1BoardCenterX, Area1.deskHeight + PC.height / 2,
         Wall.lengthLong - Wall.thickness - Area1.deskGap - Area1.deskWidth + Area1.pcMargin + PC.width / 2)
     computer.rotation.y = Math.PI
@@ -458,7 +462,7 @@ function initArea1() {
 
     // 终端
     let device1 = new THREE.Mesh(new THREE.BoxGeometry(Device.length, Device.height, Device.width),
-        new THREE.MeshPhongMaterial({color: Colors.Device}))
+        new THREE.MeshPhongMaterial({ color: Colors.Device }))
     device1.castShadow = true
     device1.receiveShadow = true
     device1.position.set(area1BoardCenterX - Area1.deskLength / 2 + Area1.deviceMargin + Device.length / 2,
@@ -492,7 +496,7 @@ function initArea1() {
 
     // 适配器
     let adapter1 = new THREE.Mesh(new THREE.BoxGeometry(Adapter.length, Adapter.height, Adapter.width),
-        new THREE.MeshPhongMaterial({color: 0x243c42}))
+        new THREE.MeshPhongMaterial({ color: 0x243c42 }))
     adapter1.castShadow = true
     adapter1.receiveShadow = true
     adapter1.position.set(area1BoardCenterX + Area1.deskLength / 2 - Area1.deviceMargin - Adapter.length / 2,
@@ -524,17 +528,19 @@ function initArea1() {
     })
     hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5])
     scene.add(hintAdapter)
+
+    area1 = desk.position.clone()
 }
 
 // 2 - OpenADR测试区域
 function initArea2() {
     let area2BoardCenterX = Wall.lengthLong + Wall.thickness * 2 + Board.gapDown + Board.lengthDown / 2
-    let desk = new Desk({length: Area2.deskLength, height: Area2.deskHeight, width: Area2.deskWidth})
+    let desk = new Desk({ length: Area2.deskLength, height: Area2.deskHeight, width: Area2.deskWidth })
     desk.position.set(area2BoardCenterX, Area2.deskHeight / 2,
         Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth / 2)
     scene.add(desk)
 
-    let computer = new Computer({length: PC.length, width: PC.width, height: PC.height})
+    let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(area2BoardCenterX, Area2.deskHeight + PC.height / 2,
         Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth + Area2.pcMargin + PC.width / 2)
     computer.rotation.y = Math.PI
@@ -543,7 +549,7 @@ function initArea2() {
     // 终端
     let deviceInterval = (Area2.deskLength - Device.length * 5) / 5
     let device = new THREE.Mesh(new THREE.BoxGeometry(Device.length, Device.height, Device.width),
-        new THREE.MeshPhongMaterial({color: Colors.Device}))
+        new THREE.MeshPhongMaterial({ color: Colors.Device }))
     device.castShadow = true
     device.receiveShadow = true
     device.position.set(area2BoardCenterX - (Area2.deskLength - deviceInterval - Device.length) / 2,
@@ -567,6 +573,8 @@ function initArea2() {
     })
     hintDevice.bindTo(deviceArray)
     scene.add(hintDevice)
+
+    area2 = desk.position.clone()
 }
 
 // 3 - 蓄冷蓄热仿真设备
@@ -576,7 +584,7 @@ function initArea3() {
     textureBarrel.wrapS = textureBarrel.wrapT = THREE.RepeatWrapping
     textureBarrel.offset.set(0.5, 0)
     textureBarrel.repeat.set(1, 2)
-    let barrelMaterial = new THREE.MeshPhongMaterial({map: textureBarrel})
+    let barrelMaterial = new THREE.MeshPhongMaterial({ map: textureBarrel })
     // 热桶
     let heatBarrel = new THREE.Mesh(new THREE.CylinderGeometry(Area3.barrelRadius,
         Area3.barrelRadius, Area3.barrelHeight, 32), barrelMaterial)
@@ -593,9 +601,9 @@ function initArea3() {
 
     // 机器
     let textureMachine = textureLoader.load('img/texture/texture_machine.jpg')
-    let machineMaterial = new THREE.MeshPhongMaterial({color: 0x576a66})
+    let machineMaterial = new THREE.MeshPhongMaterial({ color: 0x576a66 })
     let materialsMachine = [machineMaterial, machineMaterial, machineMaterial, machineMaterial,
-        new THREE.MeshPhongMaterial({map: textureMachine}), machineMaterial]
+        new THREE.MeshPhongMaterial({ map: textureMachine }), machineMaterial]
     let machine = new THREE.Mesh(new THREE.BoxGeometry(Area3.machineLength,
         Area3.machineHeight, Area3.machineWidth), materialsMachine)
     machine.castShadow = true
@@ -607,21 +615,23 @@ function initArea3() {
     // 导管
     let tube = new THREE.Mesh(new THREE.CylinderGeometry(Area3.tubeRadius, Area3.tubeRadius,
         Wall.lengthLong - Area3.barrelGapHorizontal - Area3.barrelGapHorizontal - Area3.barrelRadius * 2, 20),
-        new THREE.MeshPhongMaterial({color: 0xbebebe}))
+        new THREE.MeshPhongMaterial({ color: 0xbebebe }))
     tube.castShadow = true
     tube.receiveShadow = true
     tube.rotation.z = Math.PI / 2
     tube.position.set(Wall.lengthLong * 1.5 + Wall.thickness * 2, Area3.tubeAltitude + Area3.tubeRadius / 2,
         Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius)
     scene.add(tube)
+
+    area3 = machine.position.clone()
 }
 
 // 4 - 可调负载区域
 function initArea4() {
     let texture = new THREE.TextureLoader().load('img/texture/texture_rlc.jpg')
-    let phoneMaterial = new THREE.MeshPhongMaterial({color: 0x919da4})
+    let phoneMaterial = new THREE.MeshPhongMaterial({ color: 0x919da4 })
     let materials = [phoneMaterial, phoneMaterial, phoneMaterial, phoneMaterial,
-        phoneMaterial, new THREE.MeshPhongMaterial({map: texture})]
+        phoneMaterial, new THREE.MeshPhongMaterial({ map: texture })]
     let cabinet = new THREE.Mesh(new THREE.BoxGeometry(Area4.cabinetLength, Area4.cabinetHeight, Area4.cabinetWidth),
         materials)
     cabinet.castShadow = true
@@ -635,13 +645,13 @@ function initArea4() {
 function initArea5() {
     // 工作台
     let deskCenterX = Board.gapUp + Board.lengthUp * 1.5 + Wall.thickness + Board.intervalUp
-    let desk = new Desk({length: Area5.deskLength, height: Area5.deskHeight, width: Area5.deskWidth})
+    let desk = new Desk({ length: Area5.deskLength, height: Area5.deskHeight, width: Area5.deskWidth })
     desk.position.set(deskCenterX, Area5.deskHeight / 2,
         Wall.thickness + Area5.deskGap + Area5.deskWidth / 2)
     scene.add(desk)
 
     // 电脑
-    let computer = new Computer({length: PC.length, width: PC.width, height: PC.height})
+    let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(deskCenterX, Area5.deskHeight + PC.height / 2,
         Wall.thickness + Area5.deskGap + Area5.deskWidth / 2)
     scene.add(computer)
@@ -672,9 +682,9 @@ function initArea6() {
     scene.add(showcase)
 
     // 机柜
-    let cabinetMaterial = new THREE.MeshPhongMaterial({color: 0xcccccc})
+    let cabinetMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc })
     let materials = [cabinetMaterial, cabinetMaterial, cabinetMaterial, cabinetMaterial, cabinetMaterial,
-        new THREE.MeshPhongMaterial({map: new THREE.TextureLoader().load('img/texture/texture_pressure.jpg')})]
+        new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('img/texture/texture_pressure.jpg') })]
     let cabinet = new THREE.Mesh(new THREE.BoxGeometry(Area6.cabinetLength, Area6.cabinetHeight,
         Area6.cabinetWidth), materials)
     cabinet.castShadow = true
@@ -684,13 +694,13 @@ function initArea6() {
     scene.add(cabinet)
 
     // 工作台
-    let desk = new Desk({length: Area6.deskLength, height: Area6.deskHeight, width: Area6.deskWidth})
+    let desk = new Desk({ length: Area6.deskLength, height: Area6.deskHeight, width: Area6.deskWidth })
     desk.position.set(Wall.lengthLong + Wall.thickness - Area6.deskGapHorizontal - Area6.deskLength / 2,
         Area6.deskHeight / 2, Wall.lengthLong - Wall.thickness - Area6.deskGapVertical - Area6.deskWidth / 2)
     scene.add(desk)
 
     // 电脑
-    let computer = new Computer({length: PC.length, width: PC.width, height: PC.height})
+    let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(Wall.lengthLong + Wall.thickness - Area6.deskGapHorizontal - Area6.deskLength / 2,
         Area6.deskHeight + PC.height / 2,
         Wall.lengthLong - Wall.thickness - Area6.deskGapVertical - Area6.deskWidth / 2)
@@ -750,8 +760,8 @@ function initArea8() {
 function initArea9() {
     // 机柜
     let textureLoader = new THREE.TextureLoader()
-    let phongMaterialAC = new THREE.MeshPhongMaterial({color: 0xe2e4e2})
-    let materialsAC = [new THREE.MeshPhongMaterial({map: textureLoader.load('img/texture/texture_ac.jpg')}),
+    let phongMaterialAC = new THREE.MeshPhongMaterial({ color: 0xe2e4e2 })
+    let materialsAC = [new THREE.MeshPhongMaterial({ map: textureLoader.load('img/texture/texture_ac.jpg') }),
         phongMaterialAC, phongMaterialAC, phongMaterialAC, phongMaterialAC, phongMaterialAC]
     let cabinetAC = new THREE.Mesh(new THREE.BoxGeometry(Area9.cabinetAcLength, Area9.cabinetAcHeight,
         Area9.cabinetAcWidth), materialsAC)
@@ -760,8 +770,8 @@ function initArea9() {
     cabinetAC.position.set(Wall.thickness + Area9.cabinetGapHorizontal + Area9.cabinetAcLength / 2,
         Area9.cabinetAcHeight / 2, Wall.lengthLong - Wall.thickness - Area9.cabinetGapVertical - Area9.cabinetAcWidth / 2)
     scene.add(cabinetAC)
-    let phongMaterialDC = new THREE.MeshPhongMaterial({color: 0x9a979f})
-    let materialsDC = [new THREE.MeshPhongMaterial({map: textureLoader.load('img/texture/texture_dc.jpg')}),
+    let phongMaterialDC = new THREE.MeshPhongMaterial({ color: 0x9a979f })
+    let materialsDC = [new THREE.MeshPhongMaterial({ map: textureLoader.load('img/texture/texture_dc.jpg') }),
         phongMaterialDC, phongMaterialDC, phongMaterialDC, phongMaterialDC, phongMaterialDC]
     let cabinetDC = new THREE.Mesh(new THREE.BoxGeometry(Area9.cabinetDcWidth, Area9.cabinetDcHeight,
         Area9.cabinetDcLength), materialsDC)
@@ -771,12 +781,14 @@ function initArea9() {
         Area9.cabinetDcHeight / 2, Wall.lengthLong - Wall.thickness - Area9.cabinetGapVertical
         - Area9.cabinetAcWidth - Area9.cabinetMargin - Area9.cabinetDcLength / 2)
     scene.add(cabinetDC)
+
+    area9 = cabinetDC.position.clone()
 }
 
 // 10 - 服务器测试区域
 function initArea10() {
-    let emptyMaterial = new THREE.MeshPhongMaterial({color: Colors.dark})
-    let materials = [new THREE.MeshPhongMaterial({map: new THREE.TextureLoader().load('img/texture/texture_server.jpg')}),
+    let emptyMaterial = new THREE.MeshPhongMaterial({ color: Colors.dark })
+    let materials = [new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('img/texture/texture_server.jpg') }),
         emptyMaterial, emptyMaterial, emptyMaterial, emptyMaterial, emptyMaterial]
     // 机柜
     let cabinet1 = new THREE.Mesh(new THREE.BoxGeometry(Area10.cabinetLength, Area10.cabinetHeight,
@@ -796,10 +808,10 @@ function initArea11() {
     let textureLoader = new THREE.TextureLoader()
     // 直流电源柜
     let cabinetTexture = textureLoader.load('img/texture/texture_cabinet_secondary.jpg')
-    let cabinetMaterialOther = new THREE.MeshPhongMaterial({color: 0xbebdbb})
+    let cabinetMaterialOther = new THREE.MeshPhongMaterial({ color: 0xbebdbb })
     let cabinetCoordZ = Wall.lengthLong - Wall.thickness - Area11.cabinetGapVertical - Area11.cabinetLength / 2
     let cabinet = new THREE.Mesh(new THREE.BoxGeometry(Area11.cabinetWidth, Area11.cabinetHeight, Area11.cabinetLength),
-        [cabinetMaterialOther, new THREE.MeshPhongMaterial({map: cabinetTexture}), cabinetMaterialOther,
+        [cabinetMaterialOther, new THREE.MeshPhongMaterial({ map: cabinetTexture }), cabinetMaterialOther,
             cabinetMaterialOther, cabinetMaterialOther, cabinetMaterialOther])
     cabinet.castShadow = true
     cabinet.receiveShadow = true
@@ -809,11 +821,11 @@ function initArea11() {
 
     // 直流空调
     let conditionerTexture = textureLoader.load('img/texture/texture_conditioner_stand.jpg')
-    let conditionerMaterialOther = new THREE.MeshPhongMaterial({color: 0xe7e8ea})
+    let conditionerMaterialOther = new THREE.MeshPhongMaterial({ color: 0xe7e8ea })
     let conditionerCoordZ = cabinetCoordZ - Area11.cabinetLength / 2 - Area11.conditionerMargin - Area11.conditionerLength / 2
     let conditioner = new THREE.Mesh(new THREE.BoxGeometry(Area11.conditionerWidth, Area11.conditionerHeight,
-        Area11.conditionerLength), [conditionerMaterialOther, new THREE.MeshPhongMaterial({map: conditionerTexture}),
-        conditionerMaterialOther, conditionerMaterialOther, conditionerMaterialOther, conditionerMaterialOther])
+        Area11.conditionerLength), [conditionerMaterialOther, new THREE.MeshPhongMaterial({ map: conditionerTexture }),
+            conditionerMaterialOther, conditionerMaterialOther, conditionerMaterialOther, conditionerMaterialOther])
     conditioner.castShadow = true
     conditioner.receiveShadow = true
     conditioner.position.set(-Area11.conditionerGap - Area11.conditionerWidth / 2,
@@ -822,10 +834,10 @@ function initArea11() {
 
     // 直流冰箱
     let fridgeTexture = textureLoader.load('img/texture/texture_fridge_light.jpg')
-    let fridgeMaterialOther = new THREE.MeshPhongMaterial({color: 0xdce0e3})
+    let fridgeMaterialOther = new THREE.MeshPhongMaterial({ color: 0xdce0e3 })
     let fridgeCoordZ = conditionerCoordZ - Area11.conditionerLength / 2 - Area11.fridgeMargin - Area11.fridgeLength / 2
     let fridge = new THREE.Mesh(new THREE.BoxGeometry(Area11.fridgeWidth, Area11.fridgeHeight, Area11.fridgeLength),
-        [fridgeMaterialOther, new THREE.MeshPhongMaterial({map: fridgeTexture}), fridgeMaterialOther,
+        [fridgeMaterialOther, new THREE.MeshPhongMaterial({ map: fridgeTexture }), fridgeMaterialOther,
             fridgeMaterialOther, fridgeMaterialOther, fridgeMaterialOther])
     fridge.castShadow = true
     fridge.receiveShadow = true
@@ -834,11 +846,11 @@ function initArea11() {
 
     // 热水器
     let heaterTexture = textureLoader.load('img/texture/texture_heater_stand.jpg')
-    let heaterMaterialOther = new THREE.MeshPhongMaterial({color: 0xa3a5a4})
+    let heaterMaterialOther = new THREE.MeshPhongMaterial({ color: 0xa3a5a4 })
     let heaterCoordZ = fridgeCoordZ - Area11.fridgeLength / 2 - Area11.heaterMargin - Area11.heaterRadius
     let heater = new THREE.Mesh(new THREE.CylinderGeometry(Area11.heaterRadius,
-        Area11.heaterRadius, Area11.heaterHeight, 32), [new THREE.MeshPhongMaterial({map: heaterTexture}),
-        heaterMaterialOther, heaterMaterialOther])
+        Area11.heaterRadius, Area11.heaterHeight, 32), [new THREE.MeshPhongMaterial({ map: heaterTexture }),
+            heaterMaterialOther, heaterMaterialOther])
     heater.rotation.y = Math.PI / 2
     heater.castShadow = true
     heater.receiveShadow = true
@@ -846,18 +858,18 @@ function initArea11() {
     scene.add(heater)
 
     // 工作台
-    let deskDown = new Desk({length: Area11.deskLength, height: Area11.deskHeight, width: Area11.deskWidth})
+    let deskDown = new Desk({ length: Area11.deskLength, height: Area11.deskHeight, width: Area11.deskWidth })
     deskDown.position.set(-Area11.deskGapHorizontal - Area11.deskLength / 2, Area11.deskHeight / 2,
         Wall.lengthLong - Wall.thickness - Area11.deskGapVertical - Area11.deskWidth / 2)
     scene.add(deskDown)
 
-    let deskUp = new Desk({length: Area11.deskLength, height: Area11.deskHeight, width: Area11.deskWidth})
+    let deskUp = new Desk({ length: Area11.deskLength, height: Area11.deskHeight, width: Area11.deskWidth })
     deskUp.position.set(-Wall.lengthLong / 2, Area11.deskHeight / 2,
         Wall.thickness + Area11.deskGapVertical + Area11.deskWidth / 2)
     scene.add(deskUp)
 
     // 电脑
-    let computer = new Computer({length: PC.length, width: PC.width, height: PC.height})
+    let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(-Wall.lengthLong / 2, Area11.deskHeight + PC.height / 2,
         Wall.thickness + Area11.deskGapVertical + Area11.deskWidth / 2)
     scene.add(computer)
@@ -876,10 +888,10 @@ function initArea12() {
 
     // 冰箱
     let fridgeTexture = textureLoader.load('img/texture/texture_fridge_dark.jpg')
-    let fridgeMaterialOther = new THREE.MeshPhongMaterial({color: 0x4a4e59})
+    let fridgeMaterialOther = new THREE.MeshPhongMaterial({ color: 0x4a4e59 })
     let fridge = new THREE.Mesh(new THREE.BoxGeometry(Area12.fridgeWidth, Area12.fridgeHeight,
-        Area12.fridgeLength), [new THREE.MeshPhongMaterial({map: fridgeTexture}), fridgeMaterialOther,
-        fridgeMaterialOther, fridgeMaterialOther, fridgeMaterialOther, fridgeMaterialOther])
+        Area12.fridgeLength), [new THREE.MeshPhongMaterial({ map: fridgeTexture }), fridgeMaterialOther,
+            fridgeMaterialOther, fridgeMaterialOther, fridgeMaterialOther, fridgeMaterialOther])
     fridge.castShadow = true
     fridge.receiveShadow = true
     fridge.position.x += Area12.fridgeGapHorizontal + Area12.fridgeWidth / 2 - groupCenterX
@@ -889,11 +901,11 @@ function initArea12() {
 
     // 空调
     let conditionerTexture = textureLoader.load('img/texture/texture_conditioner_hang.jpg')
-    let conditionerMaterialOther = new THREE.MeshPhongMaterial({color: 0xf2f1ef})
+    let conditionerMaterialOther = new THREE.MeshPhongMaterial({ color: 0xf2f1ef })
     let conditioner = new THREE.Mesh(new THREE.BoxGeometry(Area12.conditionerWidth,
-        Area12.conditionerHeight, Area12.conditionerLength), [new THREE.MeshPhongMaterial({map: conditionerTexture}),
-        conditionerMaterialOther, conditionerMaterialOther, conditionerMaterialOther,
-        conditionerMaterialOther, conditionerMaterialOther])
+        Area12.conditionerHeight, Area12.conditionerLength), [new THREE.MeshPhongMaterial({ map: conditionerTexture }),
+            conditionerMaterialOther, conditionerMaterialOther, conditionerMaterialOther,
+            conditionerMaterialOther, conditionerMaterialOther])
     conditioner.castShadow = true
     conditioner.receiveShadow = true
     conditioner.position.x += Area12.conditionerWidth / 2 - groupCenterX
@@ -905,10 +917,10 @@ function initArea12() {
     let heaterTexture = textureLoader.load('img/texture/texture_heater_hang.jpg')
     heaterTexture.rotation = Math.PI / -2
     heaterTexture.center = new THREE.Vector2(0.5, 0.5)
-    let heaterMaterialSide = new THREE.MeshPhongMaterial({color: 0x123456})
+    let heaterMaterialSide = new THREE.MeshPhongMaterial({ color: 0x123456 })
     let heater = new THREE.Mesh(new THREE.CylinderGeometry(Area12.heaterRadius, Area12.heaterRadius,
-        Area12.heaterLength, 32), [new THREE.MeshPhongMaterial({map: heaterTexture}),
-        heaterMaterialSide, heaterMaterialSide])
+        Area12.heaterLength, 32), [new THREE.MeshPhongMaterial({ map: heaterTexture }),
+            heaterMaterialSide, heaterMaterialSide])
     heater.castShadow = true
     heater.receiveShadow = true
     heater.rotation.x = Math.PI / 2
@@ -927,7 +939,7 @@ function initArea12() {
     scene.add(group2)
 
     // 桌子
-    let desk = new Desk({length: Area12.deskLength, height: Area12.deskHeight, width: Area12.deskWidth})
+    let desk = new Desk({ length: Area12.deskLength, height: Area12.deskHeight, width: Area12.deskWidth })
     desk.position.set(Area12.deskGapHorizontal + Area12.deskLength / 2 - Wall.lengthLong, Area12.deskHeight / 2,
         Wall.lengthLong - Wall.thickness - Area12.deskGapVertical - Area12.deskWidth / 2)
     desk.rotation.y = Math.PI / 2
@@ -935,7 +947,7 @@ function initArea12() {
 
     // 终端
     let device = new THREE.Mesh(new THREE.BoxGeometry(Device.length, Device.height, Device.width),
-        new THREE.MeshPhongMaterial({color: Colors.Device}))
+        new THREE.MeshPhongMaterial({ color: Colors.Device }))
     device.castShadow = true
     device.receiveShadow = true
     device.rotation.y = Math.PI / 2
@@ -951,17 +963,20 @@ function initArea12() {
     })
     hintDevice.bindTo(device)
     scene.add(hintDevice)
+
+    area12 = desk.position.clone()
 }
 
 function initControls() {
     controls = new THREE.OrbitControls(camera, renderer.domElement)
-    controls.target = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, 0)
+    controls.target.copy(cameraInitTarget)
     controls.minDistance = 50
     controls.maxDistance = 500
     controls.maxPolarAngle = Math.PI / 2
     controls.panSpeed = 0.5
     controls.rotateSpeed = 0.25
     controls.zoomSpeed = 0.5
+    controls.saveState()
     controls.update()
 }
 
@@ -982,7 +997,7 @@ function addAnimation(options) {
     }
 
     let keyFrames = []
-    for (let {property, values} of options.frames) {
+    for (let { property, values } of options.frames) {
         keyFrames.push(new THREE.KeyframeTrack(property, options.timeArray, values))
     }
     let clip = new THREE.AnimationClip(options.name, options.duration, keyFrames)
@@ -1013,6 +1028,7 @@ function animate() {
     requestAnimationFrame(animate)
     render()
     controls.update()
+    TWEEN.update()
     animatingAction && animatingAction.getMixer().update(clock.getDelta())
 }
 
@@ -1023,3 +1039,50 @@ function onWindowResize() {
     camera.aspect = canvasWidth / canvasHeight
     camera.updateProjectionMatrix()
 }
+
+// toolbar - START
+
+function switchStatus(btn) {
+    let status = btn.getAttribute('data-status')
+    let use = btn.getElementsByTagName('use')[0]
+    let href = use.getAttribute('xlink:href')
+    let match = href.match(/\w+$/)[0]
+    btn.setAttribute('data-status', match)
+    use.setAttribute('xlink:href', href.replace(/\w+$/, status))
+}
+
+function toolWalk(target) {
+    switchStatus(target)
+}
+
+function toolEye(target) {
+    switchStatus(target)
+}
+
+function toolReset() {
+    // reset camera
+    camera.position.copy(cameraInitPosition)
+    // reset control
+    controls.reset()
+}
+
+function lookAt(targetPos) {
+    TWEEN.removeAll()
+    let prevPosition = camera.position.clone()
+    let prevTarget = controls.target.clone()
+
+    // Tween
+    new TWEEN.Tween(controls.target).to({
+        x: targetPos.x,
+        y: targetPos.y,
+        z: targetPos.z
+    }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
+
+    new TWEEN.Tween(camera.position).to({
+        x: targetPos.x + prevPosition.x - prevTarget.x,
+        y: targetPos.y + prevPosition.y - prevTarget.y,
+        z: targetPos.z + prevPosition.z - prevTarget.z
+    }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
+}
+
+// toolbar - END

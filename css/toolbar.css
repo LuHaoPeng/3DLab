@@ -1,0 +1,47 @@
+.toolbar {
+    position: fixed;
+    top: 10%;
+    left: 40px;
+    width: 50px;
+    background-color: rgba(217, 237, 238, 0.6);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+}
+
+.toolbar .toolbar-header {
+    color: white;
+    background-color: #0070c0;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+    cursor: default;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.toolbar .toolbar-body {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.toolbar .toolbar-body button {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    width: 30px;
+    border-radius: 15px;
+    border: none;
+    height: 30px;
+    padding: 0;
+    background-color: #72bfc5;
+    color: white;
+    cursor: pointer;
+    font-size: 19px;
+    transition: all linear 0.2s;
+}
+
+.toolbar button:hover {
+    background-color: #22aa88;
+}

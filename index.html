@@ -1,34 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>3D实验室</title>
-    <style>
-        body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/default.css">
+    <link rel="stylesheet" href="./css/toolbar.css">
+    <link rel="stylesheet" href="./css/nav.css">
 </head>
-<body>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.99.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.99.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three-onevent@1.1.2/onEvent.min.js"></script>
-<!--<script src="js/constants.js"></script>-->
-<!--<script src="js/colors.js"></script>-->
-<!--<script src="js/complex.js"></script>-->
-<!--<script src="js/index.js"></script>-->
-<script src="dist/constants.min.js"></script>
-<script src="dist/colors.min.js"></script>
-<script src="dist/complex.min.js"></script>
-<script src="dist/index.min.js"></script>
+<body>
+    <section class="toolbar">
+        <div class="toolbar-body">
+            <button type='button'>1</button>
+            <button title="巡航" type='button' onclick="toolWalk(this)" data-key="walk" data-status="walk">
+                <svg class="icon" aria-hidden="true">
+                    <use xlink:href="#icon-stand"></use>
+                </svg>
+            </button>
+            <button title="运行状态" type='button' onclick="toolEye(this)" data-key="eye" data-status="on">
+                <svg class="icon" aria-hidden="true">
+                    <use xlink:href="#icon-eye-off"></use>
+                </svg>
+            </button>
+            <button title="场景复位" type='button' onclick="toolReset()" data-key="reset">
+                <svg class="icon" aria-hidden="true">
+                    <use xlink:href="#icon-reset"></use>
+                </svg>
+            </button>
+        </div>
+    </section>
+
+    <section class="nav">
+        <ul>
+            <li>
+                <a onclick="lookAt(area1)">OpenADR测试区</a>
+            </li>
+            <li>
+                <a onclick="lookAt(area2)">需求响应测试区</a>
+            </li>
+            <li>
+                <a onclick="lookAt(area3)">蓄冷蓄热仿真区</a>
+            </li>
+            <li>
+                <a onclick="lookAt(area9)">电动汽车充电桩</a>
+            </li>
+            <li>
+                <a onclick="lookAt(area12)">非侵入式负荷</a>
+            </li>
+        </ul>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.99.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.99.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three-onevent@1.1.2/onEvent.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/17.3.0/Tween.min.js"></script>
+    <script src="lib/iconfont.js"></script>
+
+    <script src="js/constants.js"></script>
+    <script src="js/colors.js"></script>
+    <script src="js/complex.js"></script>
+    <script src="js/index.js"></script>
+    <!-- <script src="dist/constants.min.js"></script>
+    <script src="dist/colors.min.js"></script>
+    <script src="dist/complex.min.js"></script>
+    <script src="dist/index.min.js"></script> -->
 </body>
+
 </html>
