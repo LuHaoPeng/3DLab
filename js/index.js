@@ -8,6 +8,8 @@ const cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness,
 
 let area1, area2, area3, area9, area12
 
+let status, sign
+
 draw()
 
 function draw() {
@@ -594,10 +596,26 @@ function initArea3() {
         Area3.barrelHeight / 2 + Floor.thickness, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius)
     scene.add(heatBarrel)
 
+    sign = new Sign({
+        nameText:'蓄热空调',
+        statusText: '运行',
+        dataText: '10kW'
+    })
+    sign.bindTo(heatBarrel)
+    scene.add(sign)
+
     // 冰桶
     let iceBarrel = heatBarrel.clone()
     iceBarrel.position.x = Wall.lengthLong * 2 + Wall.thickness * 2 - Area3.barrelGapHorizontal - Area3.barrelRadius
     scene.add(iceBarrel)
+
+    status = new Status({
+        nameText:'蓄冷空调',
+        statusText: '运行',
+        dataText: '10kW'
+    })
+    status.bindTo(iceBarrel)
+    scene.add(status)
 
     // 机器
     let textureMachine = textureLoader.load('img/texture/texture_machine.jpg')

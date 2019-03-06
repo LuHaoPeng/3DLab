@@ -36,7 +36,7 @@ ShowBoard.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         let _this = this
         // 展板
         let board = new THREE.Mesh(new THREE.BoxGeometry(this.length, this.height, this.width),
-            new THREE.MeshPhongMaterial({color: this.boardColor}))
+            new THREE.MeshPhongMaterial({ color: this.boardColor }))
         board.castShadow = true
         board.receiveShadow = true
         this.add(board)
@@ -45,7 +45,7 @@ ShowBoard.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         this.boardImg === 'none' || new THREE.TextureLoader().load(this.boardImg, function (texture) {
             let imageMesh = new THREE.Mesh(
                 new THREE.PlaneGeometry(_this.length - _this.marginX * 2, _this.height - _this.marginY * 2),
-                new THREE.MeshBasicMaterial({map: texture})
+                new THREE.MeshBasicMaterial({ map: texture })
             )
             imageMesh.position.z += _this.width / 2 + _this.imageThickness
             _this.add(imageMesh)
@@ -76,7 +76,7 @@ Desk.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     init() {
         // 桌面
         let deskTop = new THREE.Mesh(new THREE.BoxGeometry(this.length, this.desktopThickness, this.width),
-            new THREE.MeshPhongMaterial({color: this.desktopColor}))
+            new THREE.MeshPhongMaterial({ color: this.desktopColor }))
         deskTop.castShadow = true
         deskTop.receiveShadow = true
         deskTop.position.y += (this.height - this.desktopThickness) / 2
@@ -86,7 +86,7 @@ Desk.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         let leg = new THREE.Group()
         let legGeometryHorizontal = new THREE.BoxGeometry(this.legThickness, this.legThickness, this.width - this.legThickness * 2)
         let legGeometryVertical = new THREE.BoxGeometry(this.legThickness, this.height - this.desktopThickness, this.legThickness)
-        let legMaterial = new THREE.MeshPhongMaterial({color: this.legColor})
+        let legMaterial = new THREE.MeshPhongMaterial({ color: this.legColor })
         let legPiece1 = new THREE.Mesh(legGeometryHorizontal, legMaterial)
         legPiece1.castShadow = true
         legPiece1.receiveShadow = true
@@ -143,13 +143,13 @@ WorkBench.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     constructor: WorkBench,
     init() {
         let desktop = new THREE.Mesh(new THREE.BoxGeometry(this.length, this.desktopThickness, this.width),
-            new THREE.MeshPhongMaterial({color: this.desktopColor}))
+            new THREE.MeshPhongMaterial({ color: this.desktopColor }))
         desktop.castShadow = true
         desktop.receiveShadow = true
         desktop.position.y += (this.height - this.desktopThickness) / 2
         this.add(desktop)
 
-        let cabinetMaterial = new THREE.MeshPhongMaterial({color: this.cabinetColor})
+        let cabinetMaterial = new THREE.MeshPhongMaterial({ color: this.cabinetColor })
         let cabinetBack = new THREE.Mesh(new THREE.BoxGeometry(this.length - this.cabinetMarginSide * 2, this.height - this.desktopThickness,
             this.cabinetThickness), cabinetMaterial)
         cabinetBack.castShadow = true
@@ -179,7 +179,7 @@ WorkBench.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         cabinet1.add(cabinetTop)
         let cabinetDoor = new THREE.Mesh(new THREE.BoxGeometry(this.cabinetWidth - this.cabinetThickness * 2,
             this.height - this.desktopThickness - this.cabinetThickness * 2, this.cabinetThickness),
-            new THREE.MeshPhongMaterial({color: this.cabinetDoorColor}))
+            new THREE.MeshPhongMaterial({ color: this.cabinetDoorColor }))
         cabinetDoor.castShadow = true
         cabinetDoor.receiveShadow = true
         cabinetDoor.position.z += this.width / 2 - this.cabinetMarginSide - this.cabinetThickness
@@ -194,7 +194,7 @@ WorkBench.prototype = Object.assign(Object.create(THREE.Group.prototype), {
 
         // 柜门把手
         let handle1 = new THREE.Mesh(new THREE.BoxGeometry(this.handleWidth, this.handleLength, this.handleThickness),
-            new THREE.MeshPhongMaterial({color: this.handleColor}))
+            new THREE.MeshPhongMaterial({ color: this.handleColor }))
         handle1.castShadow = true
         handle1.receiveShadow = true
         handle1.position.x -= this.length / 2 - this.cabinetMarginSide - this.cabinetWidth + this.cabinetThickness
@@ -234,7 +234,7 @@ Showcase.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     constructor: Showcase,
     init() {
         // 展柜
-        let casePieceMaterial = new THREE.MeshPhongMaterial({color: this.caseColor})
+        let casePieceMaterial = new THREE.MeshPhongMaterial({ color: this.caseColor })
         let casePieceBack = new THREE.Mesh(new THREE.BoxGeometry(this.length, this.height, this.caseThickness), casePieceMaterial)
         casePieceBack.castShadow = true
         casePieceBack.receiveShadow = true
@@ -263,7 +263,7 @@ Showcase.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         let meterMarginHorizontal = (meterAreaLength - this.column * this.meterLength) / this.column
         let meterMarginVertical = (meterAreaHeight - this.row * this.meterLength) / this.row
         let meter = new THREE.Mesh(new THREE.BoxGeometry(this.meterLength, this.meterLength, this.meterThickness),
-            new THREE.MeshPhongMaterial({color: this.meterColor}))
+            new THREE.MeshPhongMaterial({ color: this.meterColor }))
         meter.castShadow = true
         meter.receiveShadow = true
         meter.position.x -= (this.length - meterMarginHorizontal - this.caseThickness * 2 - this.meterLength) / 2
@@ -322,7 +322,7 @@ Hint.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         let texture = new THREE.Texture(canvas)
         texture.needsUpdate = true
 
-        let sprite = new THREE.Sprite(new THREE.SpriteMaterial({map: texture, transparent: true, depthWrite: false}))
+        let sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }))
         sprite.renderOrder = 1
         let ratio = canvas.width / canvas.height
         sprite.scale.set(this.scaleBasis * ratio, this.scaleBasis, 1)
@@ -389,6 +389,232 @@ CanvasRenderingContext2D.prototype.wrapText = function (text, x, y, maxWidth, li
     context.strokeText(line, x, y)
 }
 
+// 复合体 - 状态标识
+const Status = function (options = {}) {
+    THREE.Group.call(this)
+
+    options = Object.assign({
+        nameText: 'machine',
+        statusText: 'running',
+        dataText: '10kW',
+        font: 'Microsoft YaHei',
+        fontSizeMain: 48,
+        fontColorMain: '#333',
+        fontSizeSecond: 44,
+        fontColorSecond: '#fff',
+        backgroundColor: '#ffc000',
+        marginX: 40,
+        marginY: 15,
+        magic: 30,
+        signGutter: 20
+    }, options)
+
+    this.setValues(options)
+    // TODO
+    // this.visible = false
+    this.init()
+}
+Status.prototype = Object.assign(Object.create(THREE.Group.prototype), {
+    constructor: Status,
+    init() {
+        this.createTexture()
+
+        let sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.texture, transparent: true, depthWrite: false }))
+        sprite.renderOrder = 1
+        let ratio = this.w / this.h
+        sprite.scale.set(ratio * 20, 20, 1)
+        this.add(sprite)
+    },
+    setValues,
+    bindTo(obj) {
+        // 终端点击动作
+        if (!Array.isArray(obj)) {
+            obj = [obj]
+        }
+        const middleObj = obj[obj.length / 2 | 0]
+
+        this.position.copy(middleObj.position)
+        this.position.y += this.signGutter + middleObj.geometry.parameters.height / 2
+    },
+    calcWidth(nameText, statusText, dataText) {
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+        const widthName = ctx.measureText(nameText).width
+        ctx.font = `${this.fontSizeSecond}px ${this.font}`
+        const widthStatus = ctx.measureText(statusText).width
+        const widthData = ctx.measureText(dataText).width
+        return Math.max(widthName, widthStatus, widthData)
+    },
+    createTexture({ name = this.nameText,
+        status = this.statusText,
+        data = this.dataText } = {}) {
+        const PI = Math.PI
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        const w = this.calcWidth(name, status, data) + this.marginX * 2
+        const h = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4 + this.magic
+        this.w = canvas.width = w
+        this.h = canvas.height = h
+
+        // draw frame
+        let path = new Path2D()
+        path.moveTo(w / 2 - this.magic / 2, h - this.magic)
+        path.arc(this.magic, h - this.magic * 2, this.magic, PI / 2, PI)
+        path.arc(this.magic, this.magic, this.magic, PI, PI * 1.5)
+        path.arc(w - this.magic, this.magic, this.magic, PI * 1.5, 0)
+        path.arc(w - this.magic, h - this.magic * 2, this.magic, 0, PI / 2)
+        path.lineTo(w / 2 + this.magic / 2, h - this.magic)
+        path.lineTo(w / 2, h)
+        path.lineTo(w / 2 - this.magic / 2, h - this.magic)
+        ctx.fillStyle = this.backgroundColor
+        ctx.fill(path)
+
+        // draw name text
+        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'bottom'
+        ctx.fillStyle = this.fontColorMain
+        let top = this.fontSizeMain + this.marginY
+        ctx.fillText(name, w / 2, top)
+        // draw status text
+        ctx.font = `${this.fontSizeSecond}px ${this.font}`
+        ctx.fillStyle = this.fontColorSecond
+        top += this.fontSizeSecond + this.marginY
+        ctx.fillText(status, w / 2, top)
+        // draw data text
+        top += this.fontSizeSecond + this.marginY
+        ctx.fillText(data, w / 2, top)
+
+        // create texture
+        this.texture = new THREE.CanvasTexture(canvas)
+    }
+})
+
+// 复合体 - 标识
+const Sign = function (options = {}) {
+    THREE.Group.call(this)
+
+    options = Object.assign({
+        nameText: 'machine',
+        statusText: 'running',
+        dataText: '10kW',
+        font: 'Microsoft YaHei',
+        fontSizeMain: 54,
+        fontColorMain: '#333',
+        fontSizeSecond: 48,
+        fontColorSecond: '#fff',
+        frameColor: 0xff4500,
+        backgroundColor: 0xffc000,
+        marginX: 40,
+        marginY: 15,
+        magic: 30,
+        signGutter: 15
+    }, options)
+
+    this.setValues(options)
+    // TODO
+    // this.visible = false
+    this.init()
+}
+Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
+    constructor: Status,
+    init() {
+        const PI = Math.PI
+        const scale = 15
+        const m = this.magic / scale
+        const w = (this.calcWidth(this.nameText, this.statusText, this.dataText) + this.marginX * 2) / scale
+        const h = (this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4) / scale
+
+        // draw sign
+        let path = new THREE.Shape()
+        path.moveTo(w / 2 - m / 2, m)
+        path.lineTo(m, m)
+        path.arc(0, m, m, PI / -2, PI, true)
+        path.lineTo(0, h)
+        path.arc(m, 0, m, PI, PI / 2, true)
+        path.lineTo(w - m, h + m)
+        path.arc(0, -m, m, PI / 2, 0, true)
+        path.lineTo(w, 2 * m)
+        path.arc(-m, 0, m, 0, PI / -2, true)
+        path.lineTo(w / 2 + m / 2, m)
+        path.lineTo(w / 2, 0)
+        path.lineTo(w / 2 - m / 2, m)
+
+        let geometry = new THREE.ExtrudeGeometry(path, {
+            steps: 1,
+            depth: m / 4,
+            bevelThickness: m / 4,
+            bevelSize: m / 4
+        })
+
+        this.createTexture()
+
+        let material = new THREE.MeshBasicMaterial({ color: this.backgroundColor })
+        let material2 = new THREE.MeshBasicMaterial({ color: this.frameColor });
+        let sign = new THREE.Mesh(geometry, [material, material2])
+        sign.position.x -= w / 2
+        sign.position.y -= h / 2 + m
+        this.add(sign)
+
+        let plane = new THREE.Mesh(new THREE.PlaneGeometry(0.9 * w, 0.9 * h),
+            new THREE.MeshBasicMaterial({ map: this.texture, transparent: true, depthWrite: false }))
+        plane.position.set(0, 0, m / 2 + 0.1)
+        this.add(plane)
+    },
+    setValues,
+    bindTo(obj) {
+        // 终端点击动作
+        if (!Array.isArray(obj)) {
+            obj = [obj]
+        }
+        const middleObj = obj[obj.length / 2 | 0]
+
+        this.position.copy(middleObj.position)
+        this.position.y += this.signGutter + middleObj.geometry.parameters.height / 2
+    },
+    calcWidth(nameText, statusText, dataText) {
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+        const widthName = ctx.measureText(nameText).width
+        ctx.font = `${this.fontSizeSecond}px ${this.font}`
+        const widthStatus = ctx.measureText(statusText).width
+        const widthData = ctx.measureText(dataText).width
+        return Math.max(widthName, widthStatus, widthData)
+    },
+    createTexture({ name = this.nameText,
+        status = this.statusText,
+        data = this.dataText } = {}) {
+        const PI = Math.PI
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        const w = this.calcWidth(name, status, data) + this.marginX * 2
+        const h = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4
+        canvas.width = w
+        canvas.height = h
+
+        // draw name text
+        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'bottom'
+        ctx.fillStyle = this.fontColorMain
+        let top = this.fontSizeMain + this.marginY
+        ctx.fillText(name, w / 2, top)
+        // draw status text
+        ctx.font = `bold ${this.fontSizeSecond}px ${this.font}`
+        ctx.fillStyle = this.fontColorSecond
+        top += this.fontSizeSecond + this.marginY
+        ctx.fillText(status, w / 2, top)
+        // draw data text
+        top += this.fontSizeSecond + this.marginY
+        ctx.fillText(data, w / 2, top)
+
+        // create texture
+        this.texture = new THREE.CanvasTexture(canvas)
+    }
+})
+
 // 复合体 - 电脑
 const Computer = function (options = {}) {
     THREE.Group.call(this)
@@ -404,7 +630,7 @@ const Computer = function (options = {}) {
         image: 'none',
         imageColor: 0xcfcfcf,
         imageThickness: 0.05
-    }, {...options, thickness: options.width / 3})
+    }, { ...options, thickness: options.width / 3 })
     this.setValues(options)
 
     this.init()
@@ -412,7 +638,7 @@ const Computer = function (options = {}) {
 Computer.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     constructor: Computer,
     init() {
-        let frameMaterial = new THREE.MeshPhongMaterial({color: this.frameColor})
+        let frameMaterial = new THREE.MeshPhongMaterial({ color: this.frameColor })
         // 屏幕
         let screen = new THREE.Mesh(new THREE.BoxGeometry(this.length, this.screenHeight, this.thickness),
             frameMaterial)
@@ -425,10 +651,10 @@ Computer.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         // 显示图像
         let imageMaterial
         if (this.image === 'none') {
-            imageMaterial = new THREE.MeshBasicMaterial({color: this.imageColor})
+            imageMaterial = new THREE.MeshBasicMaterial({ color: this.imageColor })
         } else {
             let texture = new THREE.TextureLoader().load(this.image)
-            imageMaterial = new THREE.MeshBasicMaterial({map: texture})
+            imageMaterial = new THREE.MeshBasicMaterial({ map: texture })
         }
         let displayImage = new THREE.Mesh(new THREE.PlaneGeometry(this.length - this.marginX * 2,
             this.screenHeight - this.marginY * 2), imageMaterial)
