@@ -13,7 +13,7 @@
     <section class="toolbar">
         <div class="toolbar-body">
             <button type='button'>1</button>
-            <button title="巡航" type='button' onclick="toolWalk(this)" data-key="walk" data-status="walk">
+            <button title="巡航路线" type='button' onclick="toolWalk(this)" data-key="walk" data-status="walk">
                 <svg class="icon" aria-hidden="true">
                     <use xlink:href="#icon-stand"></use>
                 </svg>
@@ -34,19 +34,19 @@
     <section class="nav">
         <ul>
             <li>
-                <a onclick="lookAt(area1)">OpenADR测试区</a>
+                <a onclick="lookAt(area1, 's')">需求响应测试区</a>
             </li>
             <li>
-                <a onclick="lookAt(area2)">需求响应测试区</a>
+                <a onclick="lookAt(area2, 's')">OpenADR测试区</a>
             </li>
             <li>
-                <a onclick="lookAt(area3)">蓄冷蓄热仿真区</a>
+                <a onclick="lookAt(area3, 'w')">蓄冷蓄热仿真区</a>
             </li>
             <li>
-                <a onclick="lookAt(area9)">电动汽车充电桩</a>
+                <a onclick="lookAt(area9, 'a')">电动汽车充电桩</a>
             </li>
             <li>
-                <a onclick="lookAt(area12)">非侵入式负荷</a>
+                <a onclick="lookAt(area12, 'a')">非侵入式负荷</a>
             </li>
         </ul>
     </section>

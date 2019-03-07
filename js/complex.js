@@ -504,27 +504,58 @@ const Sign = function (options = {}) {
         fontColorMain: '#333',
         fontSizeSecond: 48,
         fontColorSecond: '#fff',
+        fontColorSecondOff: '#aaa',
         frameColor: 0xff4500,
+        frameColorOff: 0xa5a5a5,
         backgroundColor: 0xffc000,
-        marginX: 40,
+        backgroundColorOff: 0xe6e6e6,
+        marginX: 25,
         marginY: 15,
         magic: 30,
-        signGutter: 15
+        scaleRate: 15,
+        offline: false,
+        wallHeight: 30
     }, options)
 
     this.setValues(options)
-    // TODO
-    // this.visible = false
+    this.visible = false
     this.init()
 }
 Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     constructor: Status,
     init() {
+        this.width = this.calcWidth(this.nameText, this.statusText, this.dataText) + this.marginX * 2
+        this.height = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4
+
+        this.createBoard()
+        this.createFace()
+    },
+    setValues,
+    bindTo(obj) {
+        // 终端点击动作
+        if (!Array.isArray(obj)) {
+            obj = [obj]
+        }
+        const middleObj = obj[obj.length / 2 | 0]
+
+        this.position.copy(middleObj.position)
+        this.position.y = this.wallHeight + (this.height / 2 + this.magic) / this.scaleRate
+    },
+    calcWidth(nameText, statusText, dataText) {
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+        const widthName = ctx.measureText(nameText).width
+        ctx.font = `${this.fontSizeSecond}px ${this.font}`
+        const widthStatus = ctx.measureText(statusText).width
+        const widthData = ctx.measureText(dataText).width
+        return Math.max(widthName, widthStatus, widthData)
+    },
+    createBoard() {
         const PI = Math.PI
-        const scale = 15
-        const m = this.magic / scale
-        const w = (this.calcWidth(this.nameText, this.statusText, this.dataText) + this.marginX * 2) / scale
-        const h = (this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4) / scale
+        const m = this.magic / this.scaleRate
+        const w = this.width / this.scaleRate
+        const h = this.height / this.scaleRate
 
         // draw sign
         let path = new THREE.Shape()
@@ -548,49 +579,24 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
             bevelSize: m / 4
         })
 
-        this.createTexture()
-
-        let material = new THREE.MeshBasicMaterial({ color: this.backgroundColor })
-        let material2 = new THREE.MeshBasicMaterial({ color: this.frameColor });
+        // remove prev board
+        let prevBoard = this.getObjectByName('board')
+        this.remove(prevBoard)
+        // add new
+        let material = new THREE.MeshBasicMaterial({ color: (this.offline ? this.backgroundColorOff : this.backgroundColor) })
+        let material2 = new THREE.MeshBasicMaterial({ color: (this.offline ? this.frameColorOff : this.frameColor) });
         let sign = new THREE.Mesh(geometry, [material, material2])
         sign.position.x -= w / 2
         sign.position.y -= h / 2 + m
+        sign.name = 'board'
         this.add(sign)
-
-        let plane = new THREE.Mesh(new THREE.PlaneGeometry(0.9 * w, 0.9 * h),
-            new THREE.MeshBasicMaterial({ map: this.texture, transparent: true, depthWrite: false }))
-        plane.position.set(0, 0, m / 2 + 0.1)
-        this.add(plane)
     },
-    setValues,
-    bindTo(obj) {
-        // 终端点击动作
-        if (!Array.isArray(obj)) {
-            obj = [obj]
-        }
-        const middleObj = obj[obj.length / 2 | 0]
-
-        this.position.copy(middleObj.position)
-        this.position.y += this.signGutter + middleObj.geometry.parameters.height / 2
-    },
-    calcWidth(nameText, statusText, dataText) {
+    createFace() {
+        // calculate width & height
         let canvas = document.createElement('canvas')
         let ctx = canvas.getContext('2d')
-        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
-        const widthName = ctx.measureText(nameText).width
-        ctx.font = `${this.fontSizeSecond}px ${this.font}`
-        const widthStatus = ctx.measureText(statusText).width
-        const widthData = ctx.measureText(dataText).width
-        return Math.max(widthName, widthStatus, widthData)
-    },
-    createTexture({ name = this.nameText,
-        status = this.statusText,
-        data = this.dataText } = {}) {
-        const PI = Math.PI
-        let canvas = document.createElement('canvas')
-        let ctx = canvas.getContext('2d')
-        const w = this.calcWidth(name, status, data) + this.marginX * 2
-        const h = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4
+        const w = this.width
+        const h = this.height
         canvas.width = w
         canvas.height = h
 
@@ -600,18 +606,48 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         ctx.textBaseline = 'bottom'
         ctx.fillStyle = this.fontColorMain
         let top = this.fontSizeMain + this.marginY
-        ctx.fillText(name, w / 2, top)
+        ctx.fillText(this.nameText, w / 2, top)
         // draw status text
-        ctx.font = `bold ${this.fontSizeSecond}px ${this.font}`
-        ctx.fillStyle = this.fontColorSecond
+        ctx.font = `${this.fontSizeSecond}px ${this.font}`
+        ctx.fillStyle = this.offline ? this.fontColorSecondOff : this.fontColorSecond
         top += this.fontSizeSecond + this.marginY
-        ctx.fillText(status, w / 2, top)
+        ctx.fillText(this.statusText, w / 2, top)
         // draw data text
         top += this.fontSizeSecond + this.marginY
-        ctx.fillText(data, w / 2, top)
+        ctx.fillText(this.dataText, w / 2, top)
 
         // create texture
-        this.texture = new THREE.CanvasTexture(canvas)
+        let texture = new THREE.CanvasTexture(canvas)
+
+        // remove prev
+        let prevFront = this.getObjectByName('front')
+        this.remove(prevFront)
+        // add new
+        let front = new THREE.Mesh(new THREE.PlaneGeometry(0.9 * this.width / this.scaleRate, 0.9 * this.height / this.scaleRate),
+            new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false }))
+        front.position.set(0, 0, this.magic / this.scaleRate / 2 + 0.01)
+        front.name = 'front'
+        this.add(front)
+
+        let prevBack = this.getObjectByName('back')
+        this.remove(prevBack)
+        let back = front.clone()
+        back.rotation.y += Math.PI
+        back.position.z = -this.magic / this.scaleRate / 4 - 0.01
+        back.name = 'back'
+        this.add(back)
+    },
+    update({ name = this.nameText,
+        status = this.statusText,
+        data = this.dataText,
+        offline = this.offline } = {}) {
+        // update properties
+        this.nameText = name
+        this.statusText = status
+        this.dataText = data
+        this.offline = offline
+        // create
+        this.init()
     }
 })
 

@@ -1,5 +1,10 @@
 "use strict"
 
+// 相机
+const Camera = {
+    distance: 60,
+    altitude: 40
+}
 // 走廊
 const Corridor = {
     width: 4 // 外侧走廊宽度

@@ -3,12 +3,14 @@
 let scene, camera, renderer, controls, threeEvent,
     clock = new THREE.Clock(), animatingAction, animateActions = {}
 
-const cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2, Wall.lengthLong * 1.8)
+const cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.2, Wall.lengthLong * 1.7)
 const cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, Wall.lengthLong / 2)
 
 let area1, area2, area3, area9, area12
 
-let status, sign
+let schedule = [] // { targetPos: Vector3, direction: string, signs: Sign[] }
+
+let signs = []
 
 draw()
 
@@ -35,6 +37,7 @@ function draw() {
     initArea10()
     initArea11()
     initArea12()
+    initRoute()
     initControls()
 
     // render
@@ -532,6 +535,12 @@ function initArea1() {
     scene.add(hintAdapter)
 
     area1 = desk.position.clone()
+
+    // add to schedule
+    schedule[0] = {
+        targetPos: desk.position.clone(),
+        direction: 's'
+    }
 }
 
 // 2 - OpenADR测试区域
@@ -541,6 +550,16 @@ function initArea2() {
     desk.position.set(area2BoardCenterX, Area2.deskHeight / 2,
         Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth / 2)
     scene.add(desk)
+
+    let signAdr = new Sign({
+        nameText: 'OpenADR',
+        statusText: '运行',
+        dataText: '2kW'
+    })
+    signAdr.name = 'sign-area2-adr'
+    signAdr.bindTo(desk)
+    scene.add(signAdr)
+    signs.push(signAdr)
 
     let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(area2BoardCenterX, Area2.deskHeight + PC.height / 2,
@@ -577,6 +596,13 @@ function initArea2() {
     scene.add(hintDevice)
 
     area2 = desk.position.clone()
+
+    // add to schedule
+    schedule[1] = {
+        targetPos: desk.position.clone(),
+        direction: 's',
+        signs: [signAdr]
+    }
 }
 
 // 3 - 蓄冷蓄热仿真设备
@@ -596,26 +622,31 @@ function initArea3() {
         Area3.barrelHeight / 2 + Floor.thickness, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius)
     scene.add(heatBarrel)
 
-    sign = new Sign({
-        nameText:'蓄热空调',
+    let signHeat = new Sign({
+        nameText: '蓄热空调',
         statusText: '运行',
         dataText: '10kW'
     })
-    sign.bindTo(heatBarrel)
-    scene.add(sign)
+    signHeat.name = 'sign-area3-heat-barrel'
+    signHeat.bindTo(heatBarrel)
+    scene.add(signHeat)
+    signs.push(signHeat)
 
     // 冰桶
     let iceBarrel = heatBarrel.clone()
     iceBarrel.position.x = Wall.lengthLong * 2 + Wall.thickness * 2 - Area3.barrelGapHorizontal - Area3.barrelRadius
     scene.add(iceBarrel)
 
-    status = new Status({
-        nameText:'蓄冷空调',
-        statusText: '运行',
-        dataText: '10kW'
+    let signIce = new Sign({
+        nameText: '蓄冷空调',
+        statusText: '停机',
+        dataText: '0kW',
+        offline: true
     })
-    status.bindTo(iceBarrel)
-    scene.add(status)
+    signIce.name = 'sign-area3-ice-barrel'
+    signIce.bindTo(iceBarrel)
+    scene.add(signIce)
+    signs.push(signIce)
 
     // 机器
     let textureMachine = textureLoader.load('img/texture/texture_machine.jpg')
@@ -642,6 +673,13 @@ function initArea3() {
     scene.add(tube)
 
     area3 = machine.position.clone()
+
+    // add to schedule
+    schedule[3] = {
+        targetPos: machine.position.clone(),
+        direction: 'w',
+        signs: [signHeat, signIce]
+    }
 }
 
 // 4 - 可调负载区域
@@ -657,6 +695,23 @@ function initArea4() {
     cabinet.position.set(Wall.lengthLong + Wall.thickness * 2 + Area4.cabinetGapHorizontal + Area4.cabinetLength / 2,
         Area4.cabinetHeight / 2, Wall.lengthLong - Wall.thickness - Area4.cabinetGapVertical - Area4.cabinetWidth / 2)
     scene.add(cabinet)
+
+    let signRlc = new Sign({
+        nameText: '可调负载',
+        statusText: '运行',
+        dataText: '5kW'
+    })
+    signRlc.name = 'sign-area4-rlc'
+    signRlc.bindTo(cabinet)
+    scene.add(signRlc)
+    signs.push(signRlc)
+
+    // add to schedule
+    schedule[2] = {
+        targetPos: cabinet.position.clone(),
+        direction: 's',
+        signs: [signRlc]
+    }
 }
 
 // 5 - 系统仿真展示区域
@@ -673,6 +728,12 @@ function initArea5() {
     computer.position.set(deskCenterX, Area5.deskHeight + PC.height / 2,
         Wall.thickness + Area5.deskGap + Area5.deskWidth / 2)
     scene.add(computer)
+
+    // add to schedule
+    schedule[4] = {
+        targetPos: desk.position.clone(),
+        direction: 'w'
+    }
 }
 
 // 6 - 电能表走字检测区域
@@ -724,6 +785,12 @@ function initArea6() {
         Wall.lengthLong - Wall.thickness - Area6.deskGapVertical - Area6.deskWidth / 2)
     computer.rotation.y = Math.PI
     scene.add(computer)
+
+    // add to schedule
+    schedule[6] = {
+        targetPos: desk.position.clone(),
+        direction: 's'
+    }
 }
 
 // 7 - 计量通讯入网检测区域
@@ -749,6 +816,12 @@ function initArea7() {
         Wall.lengthLong - Wall.thickness - Area7.workbenchGapVertical - Area7.workbenchWidth / 2)
     showcase.rotation.y = Math.PI
     scene.add(showcase)
+
+    // add to schedule
+    schedule[7] = {
+        targetPos: workbench.position.clone(),
+        direction: 's'
+    }
 }
 
 // 8 - 柯子岭电表设备
@@ -772,6 +845,12 @@ function initArea8() {
         Area8.workbenchHeight + PC.height / 2,
         Wall.thickness + Area8.workbenchGap + Area8.workbenchWidth / 2)
     scene.add(computer)
+
+    // add to schedule
+    schedule[5] = {
+        targetPos: workbench.position.clone(),
+        direction: 'w'
+    }
 }
 
 // 9 - 充电桩测试区域
@@ -800,7 +879,14 @@ function initArea9() {
         - Area9.cabinetAcWidth - Area9.cabinetMargin - Area9.cabinetDcLength / 2)
     scene.add(cabinetDC)
 
-    area9 = cabinetDC.position.clone()
+    // add to schedule
+    let centerPos = cabinetAC.position.clone()
+    centerPos.z = (cabinetAC.position.z + cabinetDC.position.z) / 2
+    area9 = centerPos
+    schedule[9] = {
+        targetPos: centerPos,
+        direction: 'a'
+    }
 }
 
 // 10 - 服务器测试区域
@@ -819,6 +905,14 @@ function initArea10() {
     let cabinet2 = cabinet1.clone()
     cabinet2.position.z -= Area10.cabinetLength + Area10.cabinetMargin
     scene.add(cabinet2)
+
+    // add to schedule
+    let centerPos = cabinet1.position.clone()
+    centerPos.z = (cabinet1.position.z + cabinet2.position.z) / 2
+    schedule[8] = {
+        targetPos: centerPos,
+        direction: 'a'
+    }
 }
 
 // 11 - 507房间直流设备区域
@@ -985,6 +1079,41 @@ function initArea12() {
     area12 = desk.position.clone()
 }
 
+// 巡视路线
+function initRoute() {
+    // draw dashed line
+    let lineMat = new THREE.LineDashedMaterial({
+        color: 0x3b9611,
+        linewidth: 5
+    })
+
+    let lineGeo = new THREE.Geometry()
+    const aboveGround = 0.05
+    lineGeo.vertices.push(
+        new THREE.Vector3(Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2
+            , aboveGround, Wall.lengthLong + Corridor.width * 2),
+        new THREE.Vector3(Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2
+            , aboveGround, Wall.lengthLong / 2),
+        new THREE.Vector3(Wall.thickness + Wall.height, aboveGround, Wall.lengthLong / 2),
+        new THREE.Vector3(Wall.thickness + Wall.height, aboveGround,
+            Wall.thickness + Door.gapExit + Door.widthExit / 2),
+        new THREE.Vector3(-Wall.height, aboveGround, Wall.thickness + Door.gapExit + Door.widthExit / 2),
+        new THREE.Vector3(-Wall.height, aboveGround, Wall.lengthLong / 2),
+        new THREE.Vector3(Wall.height - Wall.lengthLong, aboveGround, Wall.lengthLong / 2),
+        new THREE.Vector3(Wall.height - Wall.lengthLong, aboveGround, Wall.lengthLong - Wall.thickness * 4),
+        new THREE.Vector3(Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong, aboveGround,
+            Wall.lengthLong - Wall.thickness * 4),
+        new THREE.Vector3(Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong, aboveGround,
+            Wall.lengthLong + Corridor.width * 2)
+    )
+
+    let line = new THREE.Line(lineGeo, lineMat)
+    line.computeLineDistances()
+    line.name = 'route-line'
+    line.visible = false
+    scene.add(line)
+}
+
 function initControls() {
     controls = new THREE.OrbitControls(camera, renderer.domElement)
     controls.target.copy(cameraInitTarget)
@@ -1070,11 +1199,25 @@ function switchStatus(btn) {
 }
 
 function toolWalk(target) {
+    // turn off signs
+    let button = document.querySelector('button[data-status=off]')
+    button && button.click()
+
+    // show route
+    let status = target.getAttribute('data-status')
     switchStatus(target)
+    let line = scene.getObjectByName('route-line')
+    line.visible = status === 'walk'
+
+    // start schedule
 }
 
 function toolEye(target) {
+    let status = target.getAttribute('data-status')
     switchStatus(target)
+    signs.map(sign => {
+        sign.visible = status === 'on'
+    })
 }
 
 function toolReset() {
@@ -1084,22 +1227,55 @@ function toolReset() {
     controls.reset()
 }
 
-function lookAt(targetPos) {
-    TWEEN.removeAll()
-    let prevPosition = camera.position.clone()
-    let prevTarget = controls.target.clone()
+function lookAt(targetPos, direction = 'w') {
+    // solution 1
+    // TWEEN.removeAll()
+    // let prevPosition = camera.position.clone()
+    // let prevTarget = controls.target.clone()
 
-    // Tween
+    // // Tween
     new TWEEN.Tween(controls.target).to({
         x: targetPos.x,
         y: targetPos.y,
         z: targetPos.z
     }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
 
+    // new TWEEN.Tween(camera.position).to({
+    //     x: targetPos.x + prevPosition.x - prevTarget.x,
+    //     y: targetPos.y + prevPosition.y - prevTarget.y,
+    //     z: targetPos.z + prevPosition.z - prevTarget.z
+    // }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
+
+    // solution 2
+    // target
+    // controls.target.copy(targetPos)
+    // camera position
+    let x, z
+    switch (direction) {
+        case 'w':
+            x = targetPos.x
+            z = targetPos.z + Camera.distance
+            break;
+        case 's':
+            x = targetPos.x
+            z = targetPos.z - Camera.distance
+            break;
+        case 'a':
+            x = targetPos.x + Camera.distance
+            z = targetPos.z
+            break;
+        case 'd':
+            x = targetPos.x - Camera.distance
+            z = targetPos.z
+            break;
+    }
+    // camera.position.set(x, Camera.altitude, z)
+
+    // solution 3
     new TWEEN.Tween(camera.position).to({
-        x: targetPos.x + prevPosition.x - prevTarget.x,
-        y: targetPos.y + prevPosition.y - prevTarget.y,
-        z: targetPos.z + prevPosition.z - prevTarget.z
+        x: x,
+        y: Camera.altitude,
+        z: z
     }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
 }
 
