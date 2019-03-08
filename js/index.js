@@ -8,7 +8,7 @@ const cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness,
 
 let schedule = [] // { targetPos: Vector3, direction: string, signs: Sign[] }
 let iterator = -1
-let interval = -1
+let intervalSchedule = -1
 let signs = []
 
 draw()
@@ -38,6 +38,9 @@ function draw() {
     initArea12()
     initRoute()
     initControls()
+
+    // data
+    queryData()
 
     // render
     animate()
@@ -1217,12 +1220,12 @@ function toolWalk(target) {
     line.visible = status === 'walk'
 
     // start schedule
-    if (interval === -1) {
-        interval = setInterval(runSchedule, 3000)
+    if (intervalSchedule === -1) {
+        intervalSchedule = setInterval(runSchedule, 3000)
     } else {
         // pause schedule
-        clearInterval(interval)
-        interval = -1
+        clearInterval(intervalSchedule)
+        intervalSchedule = -1
     }
 }
 
@@ -1315,3 +1318,27 @@ function runSchedule() {
 }
 
 // toolbar - END
+
+// query data
+function queryData() {
+    scene.getObjectByName('sign-area2-adr').update(randomData())
+    scene.getObjectByName('sign-area3-heat-barrel').update(randomData())
+    scene.getObjectByName('sign-area3-ice-barrel').update(randomData())
+    scene.getObjectByName('sign-area4-rlc').update(randomData())
+
+    setTimeout(queryData, 5000)
+}
+
+function randomData() {
+    let status = randomIn('运行', '停止', '离线')
+    return {
+        status: status,
+        data: (Math.random() * 15).toFixed(1) + 'kW',
+        offline: status !== '运行'
+    }
+}
+
+function randomIn(...rest) {
+    let num = Math.random() * rest.length
+    return rest[num | 0]
+}
