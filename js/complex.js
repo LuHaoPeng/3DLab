@@ -503,17 +503,20 @@ const Sign = function (options = {}) {
         fontSizeMain: 54,
         fontColorMain: '#333',
         fontSizeSecond: 48,
-        fontColorSecond: '#fff',
+        fontColorSecondOn: '#fff',
+        fontColorSecondPause: '#fff',
         fontColorSecondOff: '#aaa',
-        frameColor: 0xff4500,
+        frameColorOn: 0x0aa679,
+        frameColorPause: 0xff4500,
         frameColorOff: 0xa5a5a5,
-        backgroundColor: 0xffc000,
+        backgroundColorOn: 0x66cdaa,
+        backgroundColorPause: 0xffc000,
         backgroundColorOff: 0xe6e6e6,
         marginX: 25,
         marginY: 15,
         magic: 30,
         scaleRate: 15,
-        offline: false,
+        boardType: 'on', // 'on', 'off', 'pause'
         wallHeight: 30
     }, options)
 
@@ -551,6 +554,29 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         const widthData = ctx.measureText(dataText).width
         return Math.max(widthName, widthStatus, widthData)
     },
+    pickColor() {
+        switch (this.boardType.toLowerCase()) {
+            case 'pause':
+                return {
+                    bg: this.backgroundColorPause,
+                    frame: this.frameColorPause,
+                    font: this.fontColorSecondPause
+                }
+            case 'off':
+                return {
+                    bg: this.backgroundColorOff,
+                    frame: this.frameColorOff,
+                    font: this.fontColorSecondOff
+                }
+            case 'on':
+            default:
+                return {
+                    bg: this.backgroundColorOn,
+                    frame: this.frameColorOn,
+                    font: this.fontColorSecondOn
+                }
+        }
+    },
     createBoard() {
         const PI = Math.PI
         const m = this.magic / this.scaleRate
@@ -583,8 +609,8 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         let prevBoard = this.getObjectByName('board')
         this.remove(prevBoard)
         // add new
-        let material = new THREE.MeshBasicMaterial({ color: (this.offline ? this.backgroundColorOff : this.backgroundColor) })
-        let material2 = new THREE.MeshBasicMaterial({ color: (this.offline ? this.frameColorOff : this.frameColor) });
+        let material = new THREE.MeshBasicMaterial({ color: this.pickColor().bg })
+        let material2 = new THREE.MeshBasicMaterial({ color: this.pickColor().frame });
         let sign = new THREE.Mesh(geometry, [material, material2])
         sign.position.x -= w / 2
         sign.position.y -= h / 2 + m
@@ -609,7 +635,7 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         ctx.fillText(this.nameText, w / 2, top)
         // draw status text
         ctx.font = `${this.fontSizeSecond}px ${this.font}`
-        ctx.fillStyle = this.offline ? this.fontColorSecondOff : this.fontColorSecond
+        ctx.fillStyle = this.pickColor().font
         top += this.fontSizeSecond + this.marginY
         ctx.fillText(this.statusText, w / 2, top)
         // draw data text
@@ -640,12 +666,12 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     update({ name = this.nameText,
         status = this.statusText,
         data = this.dataText,
-        offline = this.offline } = {}) {
+        boardType = this.boardType } = {}) {
         // update properties
         this.nameText = name
         this.statusText = status
         this.dataText = data
-        this.offline = offline
+        this.boardType = boardType
         // create
         this.init()
     }

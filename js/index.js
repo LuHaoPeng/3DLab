@@ -1330,11 +1330,20 @@ function queryData() {
 }
 
 function randomData() {
-    let status = randomIn('运行', '停止', '离线')
+    let type = randomIn('on', 'pause', 'off')
     return {
-        status: status,
+        status: translateType(type),
         data: (Math.random() * 15).toFixed(1) + 'kW',
-        offline: status !== '运行'
+        boardType: type
+    }
+}
+
+function translateType(type) {
+    switch (type) {
+        case 'off': return '离线'
+        case 'pause': return '停机'
+        case 'on':
+        default: return '运行'
     }
 }
 
