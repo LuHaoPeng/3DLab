@@ -1,6 +1,9 @@
 {
   "name": "lab_3d",
   "version": "1.0.0",
+  "scripts": {
+    "build": "babel js -d dist/babel"
+  },
   "dependencies": {
     "@babel/polyfill": "^7.2.5"
   },

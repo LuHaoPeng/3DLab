@@ -8,6 +8,13 @@ var scene,
     clock = new THREE.Clock(),
     animatingAction,
     animateActions = {};
+var cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.2, Wall.lengthLong * 1.7);
+var cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, Wall.lengthLong / 2);
+var schedule = []; // { targetPos: Vector3, direction: string, signs: Sign[] }
+
+var iterator = -1;
+var intervalSchedule = -1;
+var signs = [];
 draw();
 
 function draw() {
@@ -33,7 +40,10 @@ function draw() {
   initArea10();
   initArea11();
   initArea12();
-  initControls(); // render
+  initRoute();
+  initControls(); // data
+
+  queryData(); // render
 
   animate(); // window resize
 
@@ -46,8 +56,7 @@ function initScene() {
 
 function initCamera() {
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2, Wall.lengthLong * 1.8);
-  camera.lookAt(new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, 0));
+  camera.position.copy(cameraInitPosition);
 }
 
 function initRenderer() {
@@ -444,7 +453,12 @@ function initArea1() {
     hintMargin: 2
   });
   hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5]);
-  scene.add(hintAdapter);
+  scene.add(hintAdapter); // add to schedule
+
+  schedule[0] = {
+    targetPos: desk.position.clone(),
+    direction: 's'
+  };
 } // 2 - OpenADR测试区域
 
 
@@ -457,6 +471,15 @@ function initArea2() {
   });
   desk.position.set(area2BoardCenterX, Area2.deskHeight / 2, Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth / 2);
   scene.add(desk);
+  var signAdr = new Sign({
+    nameText: 'OpenADR',
+    statusText: '运行',
+    dataText: '2kW'
+  });
+  signAdr.name = 'sign-area2-adr';
+  signAdr.bindTo(desk);
+  scene.add(signAdr);
+  signs.push(signAdr);
   var computer = new Computer({
     length: PC.length,
     width: PC.width,
@@ -490,7 +513,13 @@ function initArea2() {
     wordInOneLine: 3
   });
   hintDevice.bindTo(deviceArray);
-  scene.add(hintDevice);
+  scene.add(hintDevice); // add to schedule
+
+  schedule[1] = {
+    targetPos: desk.position.clone(),
+    direction: 's',
+    signs: [signAdr]
+  };
 } // 3 - 蓄冷蓄热仿真设备
 
 
@@ -508,11 +537,30 @@ function initArea3() {
   heatBarrel.castShadow = true;
   heatBarrel.receiveShadow = true;
   heatBarrel.position.set(Wall.lengthLong + Wall.thickness * 2 + Area3.barrelGapHorizontal + Area3.barrelRadius, Area3.barrelHeight / 2 + Floor.thickness, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius);
-  scene.add(heatBarrel); // 冰桶
+  scene.add(heatBarrel);
+  var signHeat = new Sign({
+    nameText: '蓄热空调',
+    statusText: '运行',
+    dataText: '10kW'
+  });
+  signHeat.name = 'sign-area3-heat-barrel';
+  signHeat.bindTo(heatBarrel);
+  scene.add(signHeat);
+  signs.push(signHeat); // 冰桶
 
   var iceBarrel = heatBarrel.clone();
   iceBarrel.position.x = Wall.lengthLong * 2 + Wall.thickness * 2 - Area3.barrelGapHorizontal - Area3.barrelRadius;
-  scene.add(iceBarrel); // 机器
+  scene.add(iceBarrel);
+  var signIce = new Sign({
+    nameText: '蓄冷空调',
+    statusText: '停机',
+    dataText: '0kW',
+    offline: true
+  });
+  signIce.name = 'sign-area3-ice-barrel';
+  signIce.bindTo(iceBarrel);
+  scene.add(signIce);
+  signs.push(signIce); // 机器
 
   var textureMachine = textureLoader.load('img/texture/texture_machine.jpg');
   var machineMaterial = new THREE.MeshPhongMaterial({
@@ -534,7 +582,13 @@ function initArea3() {
   tube.receiveShadow = true;
   tube.rotation.z = Math.PI / 2;
   tube.position.set(Wall.lengthLong * 1.5 + Wall.thickness * 2, Area3.tubeAltitude + Area3.tubeRadius / 2, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius);
-  scene.add(tube);
+  scene.add(tube); // add to schedule
+
+  schedule[3] = {
+    targetPos: machine.position.clone(),
+    direction: 'w',
+    signs: [signHeat, signIce]
+  };
 } // 4 - 可调负载区域
 
 
@@ -551,6 +605,21 @@ function initArea4() {
   cabinet.receiveShadow = true;
   cabinet.position.set(Wall.lengthLong + Wall.thickness * 2 + Area4.cabinetGapHorizontal + Area4.cabinetLength / 2, Area4.cabinetHeight / 2, Wall.lengthLong - Wall.thickness - Area4.cabinetGapVertical - Area4.cabinetWidth / 2);
   scene.add(cabinet);
+  var signRlc = new Sign({
+    nameText: '可调负载',
+    statusText: '运行',
+    dataText: '5kW'
+  });
+  signRlc.name = 'sign-area4-rlc';
+  signRlc.bindTo(cabinet);
+  scene.add(signRlc);
+  signs.push(signRlc); // add to schedule
+
+  schedule[2] = {
+    targetPos: cabinet.position.clone(),
+    direction: 's',
+    signs: [signRlc]
+  };
 } // 5 - 系统仿真展示区域
 
 
@@ -571,7 +640,12 @@ function initArea5() {
     height: PC.height
   });
   computer.position.set(deskCenterX, Area5.deskHeight + PC.height / 2, Wall.thickness + Area5.deskGap + Area5.deskWidth / 2);
-  scene.add(computer);
+  scene.add(computer); // add to schedule
+
+  schedule[4] = {
+    targetPos: desk.position.clone(),
+    direction: 'w'
+  };
 } // 6 - 电能表走字检测区域
 
 
@@ -622,7 +696,12 @@ function initArea6() {
   });
   computer.position.set(Wall.lengthLong + Wall.thickness - Area6.deskGapHorizontal - Area6.deskLength / 2, Area6.deskHeight + PC.height / 2, Wall.lengthLong - Wall.thickness - Area6.deskGapVertical - Area6.deskWidth / 2);
   computer.rotation.y = Math.PI;
-  scene.add(computer);
+  scene.add(computer); // add to schedule
+
+  schedule[6] = {
+    targetPos: desk.position.clone(),
+    direction: 's'
+  };
 } // 7 - 计量通讯入网检测区域
 
 
@@ -642,7 +721,12 @@ function initArea7() {
   });
   showcase.position.set(Wall.thickness + Area7.workbenchGapHorizontal + Area7.workbenchLength / 2, Area7.showcaseHeight / 2 + Area7.workbenchHeight, Wall.lengthLong - Wall.thickness - Area7.workbenchGapVertical - Area7.workbenchWidth / 2);
   showcase.rotation.y = Math.PI;
-  scene.add(showcase);
+  scene.add(showcase); // add to schedule
+
+  schedule[7] = {
+    targetPos: workbench.position.clone(),
+    direction: 's'
+  };
 } // 8 - 柯子岭电表设备
 
 
@@ -661,7 +745,12 @@ function initArea8() {
     height: PC.height
   });
   computer.position.set(Board.gapUp + Board.lengthUp / 2 + Wall.thickness, Area8.workbenchHeight + PC.height / 2, Wall.thickness + Area8.workbenchGap + Area8.workbenchWidth / 2);
-  scene.add(computer);
+  scene.add(computer); // add to schedule
+
+  schedule[5] = {
+    targetPos: workbench.position.clone(),
+    direction: 'w'
+  };
 } // 9 - 充电桩测试区域
 
 
@@ -689,7 +778,14 @@ function initArea9() {
   cabinetDC.castShadow = true;
   cabinetDC.receiveShadow = true;
   cabinetDC.position.set(Wall.thickness + Area9.cabinetGapHorizontal + Area9.cabinetDcWidth / 2, Area9.cabinetDcHeight / 2, Wall.lengthLong - Wall.thickness - Area9.cabinetGapVertical - Area9.cabinetAcWidth - Area9.cabinetMargin - Area9.cabinetDcLength / 2);
-  scene.add(cabinetDC);
+  scene.add(cabinetDC); // add to schedule
+
+  var centerPos = cabinetAC.position.clone();
+  centerPos.z = (cabinetAC.position.z + cabinetDC.position.z) / 2;
+  schedule[9] = {
+    targetPos: centerPos,
+    direction: 'a'
+  };
 } // 10 - 服务器测试区域
 
 
@@ -708,7 +804,14 @@ function initArea10() {
   scene.add(cabinet1);
   var cabinet2 = cabinet1.clone();
   cabinet2.position.z -= Area10.cabinetLength + Area10.cabinetMargin;
-  scene.add(cabinet2);
+  scene.add(cabinet2); // add to schedule
+
+  var centerPos = cabinet1.position.clone();
+  centerPos.z = (cabinet1.position.z + cabinet2.position.z) / 2;
+  schedule[8] = {
+    targetPos: centerPos,
+    direction: 'a'
+  };
 } // 11 - 507房间直流设备区域
 
 
@@ -789,7 +892,14 @@ function initArea11() {
     height: PC.height
   });
   computer.position.set(-Wall.lengthLong / 2, Area11.deskHeight + PC.height / 2, Wall.thickness + Area11.deskGapVertical + Area11.deskWidth / 2);
-  scene.add(computer);
+  scene.add(computer); // add to schedule
+
+  var centerPos = heater.position.clone();
+  centerPos.z = Wall.lengthLong / 2;
+  schedule[11] = {
+    targetPos: centerPos,
+    direction: 'd'
+  };
 } // 12 - 507房间非侵入式负荷测试区域
 
 
@@ -877,18 +987,43 @@ function initArea12() {
     wordInOneLine: 3
   });
   hintDevice.bindTo(device);
-  scene.add(hintDevice);
+  scene.add(hintDevice); // add to schedule
+
+  var centerPos = group.position.clone();
+  centerPos.z = Wall.lengthLong / 2;
+  schedule[10] = {
+    targetPos: centerPos,
+    direction: 'a'
+  };
+} // 巡视路线
+
+
+function initRoute() {
+  // draw dashed line
+  var lineMat = new THREE.LineDashedMaterial({
+    color: 0x3b9611,
+    linewidth: 5
+  });
+  var lineGeo = new THREE.Geometry();
+  var aboveGround = 0.05;
+  lineGeo.vertices.push(new THREE.Vector3(Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2, aboveGround, Wall.lengthLong + Corridor.width * 3), new THREE.Vector3(Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2, aboveGround, Wall.lengthLong / 2), new THREE.Vector3(Wall.thickness + Wall.height, aboveGround, Wall.lengthLong / 2), new THREE.Vector3(Wall.thickness + Wall.height, aboveGround, Wall.thickness + Door.gapExit + Door.widthExit / 2), new THREE.Vector3(-Wall.height, aboveGround, Wall.thickness + Door.gapExit + Door.widthExit / 2), new THREE.Vector3(-Wall.height, aboveGround, Wall.lengthLong / 2), new THREE.Vector3(Wall.height - Wall.lengthLong, aboveGround, Wall.lengthLong / 2), new THREE.Vector3(Wall.height - Wall.lengthLong, aboveGround, Wall.lengthLong - Wall.thickness * 4), new THREE.Vector3(Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong, aboveGround, Wall.lengthLong - Wall.thickness * 4), new THREE.Vector3(Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong, aboveGround, Wall.lengthLong + Corridor.width * 3));
+  var line = new THREE.Line(lineGeo, lineMat);
+  line.computeLineDistances();
+  line.name = 'route-line';
+  line.visible = false;
+  scene.add(line);
 }
 
 function initControls() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.target = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, 0);
+  controls.target.copy(cameraInitTarget);
   controls.minDistance = 50;
   controls.maxDistance = 500;
   controls.maxPolarAngle = Math.PI / 2;
   controls.panSpeed = 0.5;
   controls.rotateSpeed = 0.25;
   controls.zoomSpeed = 0.5;
+  controls.saveState();
   controls.update();
 }
 
@@ -965,6 +1100,7 @@ function animate() {
   requestAnimationFrame(animate);
   render();
   controls.update();
+  TWEEN.update();
   animatingAction && animatingAction.getMixer().update(clock.getDelta());
 }
 
@@ -974,5 +1110,166 @@ function onWindowResize() {
   renderer.setSize(canvasWidth, canvasHeight);
   camera.aspect = canvasWidth / canvasHeight;
   camera.updateProjectionMatrix();
+} // toolbar - START
+
+
+function switchStatus(btn) {
+  var status = btn.getAttribute('data-status');
+  var use = btn.getElementsByTagName('use')[0];
+  var href = use.getAttribute('xlink:href');
+  var match = href.match(/\w+$/)[0];
+  btn.setAttribute('data-status', match);
+  use.setAttribute('xlink:href', href.replace(/\w+$/, status));
 }
-//# sourceMappingURL=index.js.map
+
+function toolWalk(target) {
+  // turn off signs
+  var button = document.querySelector('button[data-status=off]');
+  button && button.click(); // show route
+
+  var status = target.getAttribute('data-status');
+  switchStatus(target);
+  target.title = status === 'walk' ? '暂停巡航' : '开启巡航';
+  var line = scene.getObjectByName('route-line');
+  line.visible = status === 'walk'; // start schedule
+
+  if (intervalSchedule === -1) {
+    intervalSchedule = setInterval(runSchedule, 3000);
+  } else {
+    // pause schedule
+    clearInterval(intervalSchedule);
+    intervalSchedule = -1;
+  }
+}
+
+function toolEye(target) {
+  var status = target.getAttribute('data-status');
+  switchStatus(target);
+  target.title = status === 'on' ? '隐藏运行状态' : '显示运行状态';
+  signs.map(function (sign) {
+    sign.visible = status === 'on';
+  });
+}
+
+function toolReset() {
+  // reset camera
+  camera.position.copy(cameraInitPosition); // reset control
+
+  controls.reset();
+}
+
+function lookAt(scheduleObj) {
+  var targetPos = scheduleObj.targetPos;
+  var direction = scheduleObj.direction; // solution 1
+  // TWEEN.removeAll()
+  // let prevPosition = camera.position.clone()
+  // let prevTarget = controls.target.clone()
+  // // Tween
+
+  new TWEEN.Tween(controls.target).to({
+    x: targetPos.x,
+    y: targetPos.y,
+    z: targetPos.z
+  }, 600).easing(TWEEN.Easing.Cubic.InOut).start(); // new TWEEN.Tween(camera.position).to({
+  //     x: targetPos.x + prevPosition.x - prevTarget.x,
+  //     y: targetPos.y + prevPosition.y - prevTarget.y,
+  //     z: targetPos.z + prevPosition.z - prevTarget.z
+  // }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
+  // solution 2
+  // target
+  // controls.target.copy(targetPos)
+  // camera position
+
+  var x, z;
+
+  switch (direction) {
+    case 'w':
+      x = targetPos.x;
+      z = targetPos.z + Camera.distance;
+      break;
+
+    case 's':
+      x = targetPos.x;
+      z = targetPos.z - Camera.distance;
+      break;
+
+    case 'a':
+      x = targetPos.x + Camera.distance;
+      z = targetPos.z;
+      break;
+
+    case 'd':
+      x = targetPos.x - Camera.distance;
+      z = targetPos.z;
+      break;
+  } // camera.position.set(x, Camera.altitude, z)
+  // solution 3
+
+
+  new TWEEN.Tween(camera.position).to({
+    x: x,
+    y: Camera.altitude,
+    z: z
+  }, 600).easing(TWEEN.Easing.Cubic.InOut).start();
+}
+
+function runSchedule() {
+  // hide prev sign
+  var prevIter = iterator;
+
+  if (prevIter !== -1) {
+    var _scheduleObj = schedule[prevIter];
+    var prevSigns = _scheduleObj.signs;
+    prevSigns && prevSigns.map(function (sign) {
+      return sign.visible = false;
+    });
+  } // lookat next area
+
+
+  iterator = (iterator + 1) % schedule.length;
+  var scheduleObj = schedule[iterator];
+  lookAt(scheduleObj); // show sign
+
+  var curSigns = scheduleObj.signs;
+  curSigns && curSigns.map(function (sign) {
+    return sign.visible = true;
+  });
+} // toolbar - END
+// query data
+
+
+function queryData() {
+  scene.getObjectByName('sign-area2-adr').update(randomData());
+  scene.getObjectByName('sign-area3-heat-barrel').update(randomData());
+  scene.getObjectByName('sign-area3-ice-barrel').update(randomData());
+  scene.getObjectByName('sign-area4-rlc').update(randomData());
+  setTimeout(queryData, 5000);
+}
+
+function randomData() {
+  var type = randomIn('on', 'pause', 'off');
+  return {
+    status: translateType(type),
+    data: (Math.random() * 15).toFixed(1) + 'kW',
+    boardType: type
+  };
+}
+
+function translateType(type) {
+  switch (type) {
+    case 'off':
+      return '离线';
+
+    case 'pause':
+      return '停机';
+
+    case 'on':
+    default:
+      return '运行';
+  }
+}
+
+function randomIn() {
+  var num = Math.random() * arguments.length;
+  return (num | 0) < 0 || arguments.length <= (num | 0) ? undefined : arguments[num | 0];
+}

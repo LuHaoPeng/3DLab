@@ -8,4 +8,3 @@ var Colors = {
   white: 0xffffff // 通用白色
 
 };
-//# sourceMappingURL=colors.js.map

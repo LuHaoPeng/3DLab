@@ -1,5 +1,10 @@
-"use strict"; // 走廊
+"use strict"; // 相机
 
+var Camera = {
+  distance: 60,
+  altitude: 40 // 走廊
+
+};
 var Corridor = {
   width: 4 // 外侧走廊宽度
   // 墙
@@ -381,4 +386,3 @@ var Area12 = {
   deskGapVertical: 15 // 工作台纵向墙距
 
 };
-//# sourceMappingURL=constants.js.map

@@ -399,8 +399,309 @@ CanvasRenderingContext2D.prototype.wrapText = function (text, x, y, maxWidth, li
 
   context.fillText(line, x, y);
   context.strokeText(line, x, y);
-}; // 复合体 - 电脑
+}; // 复合体 - 状态标识
 
+
+var Status = function Status() {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  THREE.Group.call(this);
+  options = Object.assign({
+    nameText: 'machine',
+    statusText: 'running',
+    dataText: '10kW',
+    font: 'Microsoft YaHei',
+    fontSizeMain: 48,
+    fontColorMain: '#333',
+    fontSizeSecond: 44,
+    fontColorSecond: '#fff',
+    backgroundColor: '#ffc000',
+    marginX: 40,
+    marginY: 15,
+    magic: 30,
+    signGutter: 20
+  }, options);
+  this.setValues(options); // TODO
+  // this.visible = false
+
+  this.init();
+};
+
+Status.prototype = Object.assign(Object.create(THREE.Group.prototype), {
+  constructor: Status,
+  init: function init() {
+    this.createTexture();
+    var sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: this.texture,
+      transparent: true,
+      depthWrite: false
+    }));
+    sprite.renderOrder = 1;
+    var ratio = this.w / this.h;
+    sprite.scale.set(ratio * 20, 20, 1);
+    this.add(sprite);
+  },
+  setValues: setValues,
+  bindTo: function bindTo(obj) {
+    // 终端点击动作
+    if (!Array.isArray(obj)) {
+      obj = [obj];
+    }
+
+    var middleObj = obj[obj.length / 2 | 0];
+    this.position.copy(middleObj.position);
+    this.position.y += this.signGutter + middleObj.geometry.parameters.height / 2;
+  },
+  calcWidth: function calcWidth(nameText, statusText, dataText) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
+    var widthName = ctx.measureText(nameText).width;
+    ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
+    var widthStatus = ctx.measureText(statusText).width;
+    var widthData = ctx.measureText(dataText).width;
+    return Math.max(widthName, widthStatus, widthData);
+  },
+  createTexture: function createTexture() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$name = _ref.name,
+        name = _ref$name === void 0 ? this.nameText : _ref$name,
+        _ref$status = _ref.status,
+        status = _ref$status === void 0 ? this.statusText : _ref$status,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? this.dataText : _ref$data;
+
+    var PI = Math.PI;
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var w = this.calcWidth(name, status, data) + this.marginX * 2;
+    var h = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4 + this.magic;
+    this.w = canvas.width = w;
+    this.h = canvas.height = h; // draw frame
+
+    var path = new Path2D();
+    path.moveTo(w / 2 - this.magic / 2, h - this.magic);
+    path.arc(this.magic, h - this.magic * 2, this.magic, PI / 2, PI);
+    path.arc(this.magic, this.magic, this.magic, PI, PI * 1.5);
+    path.arc(w - this.magic, this.magic, this.magic, PI * 1.5, 0);
+    path.arc(w - this.magic, h - this.magic * 2, this.magic, 0, PI / 2);
+    path.lineTo(w / 2 + this.magic / 2, h - this.magic);
+    path.lineTo(w / 2, h);
+    path.lineTo(w / 2 - this.magic / 2, h - this.magic);
+    ctx.fillStyle = this.backgroundColor;
+    ctx.fill(path); // draw name text
+
+    ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = this.fontColorMain;
+    var top = this.fontSizeMain + this.marginY;
+    ctx.fillText(name, w / 2, top); // draw status text
+
+    ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
+    ctx.fillStyle = this.fontColorSecond;
+    top += this.fontSizeSecond + this.marginY;
+    ctx.fillText(status, w / 2, top); // draw data text
+
+    top += this.fontSizeSecond + this.marginY;
+    ctx.fillText(data, w / 2, top); // create texture
+
+    this.texture = new THREE.CanvasTexture(canvas);
+  }
+}); // 复合体 - 标识
+
+var Sign = function Sign() {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  THREE.Group.call(this);
+  options = Object.assign({
+    nameText: 'machine',
+    statusText: 'running',
+    dataText: '10kW',
+    font: 'Microsoft YaHei',
+    fontSizeMain: 54,
+    fontColorMain: '#333',
+    fontSizeSecond: 48,
+    fontColorSecondOn: '#fff',
+    fontColorSecondPause: '#fff',
+    fontColorSecondOff: '#aaa',
+    frameColorOn: 0x0aa679,
+    frameColorPause: 0xff4500,
+    frameColorOff: 0xa5a5a5,
+    backgroundColorOn: 0x66cdaa,
+    backgroundColorPause: 0xffc000,
+    backgroundColorOff: 0xe6e6e6,
+    marginX: 25,
+    marginY: 15,
+    magic: 30,
+    scaleRate: 15,
+    boardType: 'on',
+    // 'on', 'off', 'pause'
+    wallHeight: 30
+  }, options);
+  this.setValues(options);
+  this.visible = false;
+  this.init();
+};
+
+Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
+  constructor: Status,
+  init: function init() {
+    this.width = this.calcWidth(this.nameText, this.statusText, this.dataText) + this.marginX * 2;
+    this.height = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4;
+    this.createBoard();
+    this.createFace();
+  },
+  setValues: setValues,
+  bindTo: function bindTo(obj) {
+    // 终端点击动作
+    if (!Array.isArray(obj)) {
+      obj = [obj];
+    }
+
+    var middleObj = obj[obj.length / 2 | 0];
+    this.position.copy(middleObj.position);
+    this.position.y = this.wallHeight + (this.height / 2 + this.magic) / this.scaleRate;
+  },
+  calcWidth: function calcWidth(nameText, statusText, dataText) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
+    var widthName = ctx.measureText(nameText).width;
+    ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
+    var widthStatus = ctx.measureText(statusText).width;
+    var widthData = ctx.measureText(dataText).width;
+    return Math.max(widthName, widthStatus, widthData);
+  },
+  pickColor: function pickColor() {
+    switch (this.boardType.toLowerCase()) {
+      case 'pause':
+        return {
+          bg: this.backgroundColorPause,
+          frame: this.frameColorPause,
+          font: this.fontColorSecondPause
+        };
+
+      case 'off':
+        return {
+          bg: this.backgroundColorOff,
+          frame: this.frameColorOff,
+          font: this.fontColorSecondOff
+        };
+
+      case 'on':
+      default:
+        return {
+          bg: this.backgroundColorOn,
+          frame: this.frameColorOn,
+          font: this.fontColorSecondOn
+        };
+    }
+  },
+  createBoard: function createBoard() {
+    var PI = Math.PI;
+    var m = this.magic / this.scaleRate;
+    var w = this.width / this.scaleRate;
+    var h = this.height / this.scaleRate; // draw sign
+
+    var path = new THREE.Shape();
+    path.moveTo(w / 2 - m / 2, m);
+    path.lineTo(m, m);
+    path.arc(0, m, m, PI / -2, PI, true);
+    path.lineTo(0, h);
+    path.arc(m, 0, m, PI, PI / 2, true);
+    path.lineTo(w - m, h + m);
+    path.arc(0, -m, m, PI / 2, 0, true);
+    path.lineTo(w, 2 * m);
+    path.arc(-m, 0, m, 0, PI / -2, true);
+    path.lineTo(w / 2 + m / 2, m);
+    path.lineTo(w / 2, 0);
+    path.lineTo(w / 2 - m / 2, m);
+    var geometry = new THREE.ExtrudeGeometry(path, {
+      steps: 1,
+      depth: m / 4,
+      bevelThickness: m / 4,
+      bevelSize: m / 4
+    }); // remove prev board
+
+    var prevBoard = this.getObjectByName('board');
+    this.remove(prevBoard); // add new
+
+    var material = new THREE.MeshBasicMaterial({
+      color: this.pickColor().bg
+    });
+    var material2 = new THREE.MeshBasicMaterial({
+      color: this.pickColor().frame
+    });
+    var sign = new THREE.Mesh(geometry, [material, material2]);
+    sign.position.x -= w / 2;
+    sign.position.y -= h / 2 + m;
+    sign.name = 'board';
+    this.add(sign);
+  },
+  createFace: function createFace() {
+    // calculate width & height
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var w = this.width;
+    var h = this.height;
+    canvas.width = w;
+    canvas.height = h; // draw name text
+
+    ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = this.fontColorMain;
+    var top = this.fontSizeMain + this.marginY;
+    ctx.fillText(this.nameText, w / 2, top); // draw status text
+
+    ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
+    ctx.fillStyle = this.pickColor().font;
+    top += this.fontSizeSecond + this.marginY;
+    ctx.fillText(this.statusText, w / 2, top); // draw data text
+
+    top += this.fontSizeSecond + this.marginY;
+    ctx.fillText(this.dataText, w / 2, top); // create texture
+
+    var texture = new THREE.CanvasTexture(canvas); // remove prev
+
+    var prevFront = this.getObjectByName('front');
+    this.remove(prevFront); // add new
+
+    var front = new THREE.Mesh(new THREE.PlaneGeometry(0.9 * this.width / this.scaleRate, 0.9 * this.height / this.scaleRate), new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false
+    }));
+    front.position.set(0, 0, this.magic / this.scaleRate / 2 + 0.01);
+    front.name = 'front';
+    this.add(front);
+    var prevBack = this.getObjectByName('back');
+    this.remove(prevBack);
+    var back = front.clone();
+    back.rotation.y += Math.PI;
+    back.position.z = -this.magic / this.scaleRate / 4 - 0.01;
+    back.name = 'back';
+    this.add(back);
+  },
+  update: function update() {
+    var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref2$name = _ref2.name,
+        name = _ref2$name === void 0 ? this.nameText : _ref2$name,
+        _ref2$status = _ref2.status,
+        status = _ref2$status === void 0 ? this.statusText : _ref2$status,
+        _ref2$data = _ref2.data,
+        data = _ref2$data === void 0 ? this.dataText : _ref2$data,
+        _ref2$boardType = _ref2.boardType,
+        boardType = _ref2$boardType === void 0 ? this.boardType : _ref2$boardType;
+
+    // update properties
+    this.nameText = name;
+    this.statusText = status;
+    this.dataText = data;
+    this.boardType = boardType; // create
+
+    this.init();
+  }
+}); // 复合体 - 电脑
 
 var Computer = function Computer() {
   var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -469,4 +770,3 @@ Computer.prototype = Object.assign(Object.create(THREE.Group.prototype), {
   },
   setValues: setValues
 });
-//# sourceMappingURL=complex.js.map
