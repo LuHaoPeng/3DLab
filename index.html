@@ -13,17 +13,17 @@
     <section class="toolbar">
         <div class="toolbar-body">
             <button type='button'>1</button>
-            <button title="巡航路线" type='button' onclick="toolWalk(this)" data-key="walk" data-status="walk">
+            <button title="开启巡航" type='button' onclick="toolWalk(this)" data-key="walk" data-status="walk">
                 <svg class="icon" aria-hidden="true">
                     <use xlink:href="#icon-stand"></use>
                 </svg>
             </button>
-            <button title="运行状态" type='button' onclick="toolEye(this)" data-key="eye" data-status="on">
+            <button title="显示运行状态" type='button' onclick="toolEye(this)" data-key="eye" data-status="on">
                 <svg class="icon" aria-hidden="true">
                     <use xlink:href="#icon-eye-off"></use>
                 </svg>
             </button>
-            <button title="场景复位" type='button' onclick="toolReset()" data-key="reset">
+            <button title="视角复位" type='button' onclick="toolReset()" data-key="reset">
                 <svg class="icon" aria-hidden="true">
                     <use xlink:href="#icon-reset"></use>
                 </svg>
@@ -34,19 +34,19 @@
     <section class="nav">
         <ul>
             <li>
-                <a onclick="lookAt(area1, 's')">需求响应测试区</a>
+                <a onclick="lookAt(schedule[0])">需求响应测试区</a>
             </li>
             <li>
-                <a onclick="lookAt(area2, 's')">OpenADR测试区</a>
+                <a onclick="lookAt(schedule[1])">OpenADR测试区</a>
             </li>
             <li>
-                <a onclick="lookAt(area3, 'w')">蓄冷蓄热仿真区</a>
+                <a onclick="lookAt(schedule[3])">蓄冷蓄热仿真区</a>
             </li>
             <li>
-                <a onclick="lookAt(area9, 'a')">电动汽车充电桩</a>
+                <a onclick="lookAt(schedule[9])">电动汽车充电桩</a>
             </li>
             <li>
-                <a onclick="lookAt(area12, 'a')">非侵入式负荷</a>
+                <a onclick="lookAt(schedule[10])">非侵入式负荷</a>
             </li>
         </ul>
     </section>

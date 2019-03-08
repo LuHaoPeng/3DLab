@@ -39,9 +39,14 @@
     color: white;
     cursor: pointer;
     font-size: 19px;
-    transition: all linear 0.2s;
+    transition: all linear 0.15s;
 }
 
 .toolbar button:hover {
-    background-color: #22aa88;
+    background-color: #1890ff;
+}
+
+.toolbar button[data-status=stand],
+.toolbar button[data-status=off] {
+    background-color: #1890ff;
 }

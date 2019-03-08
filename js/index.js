@@ -6,10 +6,9 @@ let scene, camera, renderer, controls, threeEvent,
 const cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.2, Wall.lengthLong * 1.7)
 const cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, Wall.lengthLong / 2)
 
-let area1, area2, area3, area9, area12
-
 let schedule = [] // { targetPos: Vector3, direction: string, signs: Sign[] }
-
+let iterator = -1
+let interval = -1
 let signs = []
 
 draw()
@@ -534,8 +533,6 @@ function initArea1() {
     hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5])
     scene.add(hintAdapter)
 
-    area1 = desk.position.clone()
-
     // add to schedule
     schedule[0] = {
         targetPos: desk.position.clone(),
@@ -594,8 +591,6 @@ function initArea2() {
     })
     hintDevice.bindTo(deviceArray)
     scene.add(hintDevice)
-
-    area2 = desk.position.clone()
 
     // add to schedule
     schedule[1] = {
@@ -671,8 +666,6 @@ function initArea3() {
     tube.position.set(Wall.lengthLong * 1.5 + Wall.thickness * 2, Area3.tubeAltitude + Area3.tubeRadius / 2,
         Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius)
     scene.add(tube)
-
-    area3 = machine.position.clone()
 
     // add to schedule
     schedule[3] = {
@@ -882,7 +875,6 @@ function initArea9() {
     // add to schedule
     let centerPos = cabinetAC.position.clone()
     centerPos.z = (cabinetAC.position.z + cabinetDC.position.z) / 2
-    area9 = centerPos
     schedule[9] = {
         targetPos: centerPos,
         direction: 'a'
@@ -985,6 +977,14 @@ function initArea11() {
     computer.position.set(-Wall.lengthLong / 2, Area11.deskHeight + PC.height / 2,
         Wall.thickness + Area11.deskGapVertical + Area11.deskWidth / 2)
     scene.add(computer)
+
+    // add to schedule
+    let centerPos = heater.position.clone()
+    centerPos.z = Wall.lengthLong / 2
+    schedule[11] = {
+        targetPos: centerPos,
+        direction: 'd'
+    }
 }
 
 // 12 - 507房间非侵入式负荷测试区域
@@ -1076,7 +1076,13 @@ function initArea12() {
     hintDevice.bindTo(device)
     scene.add(hintDevice)
 
-    area12 = desk.position.clone()
+    // add to schedule
+    let centerPos = group.position.clone()
+    centerPos.z = Wall.lengthLong / 2
+    schedule[10] = {
+        targetPos: centerPos,
+        direction: 'a'
+    }
 }
 
 // 巡视路线
@@ -1091,7 +1097,7 @@ function initRoute() {
     const aboveGround = 0.05
     lineGeo.vertices.push(
         new THREE.Vector3(Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2
-            , aboveGround, Wall.lengthLong + Corridor.width * 2),
+            , aboveGround, Wall.lengthLong + Corridor.width * 3),
         new THREE.Vector3(Wall.lengthLong * 2 + Wall.thickness * 2 - Door.gapEntry - Door.widthEntry / 2
             , aboveGround, Wall.lengthLong / 2),
         new THREE.Vector3(Wall.thickness + Wall.height, aboveGround, Wall.lengthLong / 2),
@@ -1104,7 +1110,7 @@ function initRoute() {
         new THREE.Vector3(Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong, aboveGround,
             Wall.lengthLong - Wall.thickness * 4),
         new THREE.Vector3(Door.gapSecondary + Door.widthSecondary / 2 - Wall.lengthLong, aboveGround,
-            Wall.lengthLong + Corridor.width * 2)
+            Wall.lengthLong + Corridor.width * 3)
     )
 
     let line = new THREE.Line(lineGeo, lineMat)
@@ -1206,15 +1212,24 @@ function toolWalk(target) {
     // show route
     let status = target.getAttribute('data-status')
     switchStatus(target)
+    target.title = status === 'walk' ? '暂停巡航' : '开启巡航'
     let line = scene.getObjectByName('route-line')
     line.visible = status === 'walk'
 
     // start schedule
+    if (interval === -1) {
+        interval = setInterval(runSchedule, 3000)
+    } else {
+        // pause schedule
+        clearInterval(interval)
+        interval = -1
+    }
 }
 
 function toolEye(target) {
     let status = target.getAttribute('data-status')
     switchStatus(target)
+    target.title = status === 'on' ? '隐藏运行状态' : '显示运行状态'
     signs.map(sign => {
         sign.visible = status === 'on'
     })
@@ -1227,7 +1242,10 @@ function toolReset() {
     controls.reset()
 }
 
-function lookAt(targetPos, direction = 'w') {
+function lookAt(scheduleObj) {
+    let targetPos = scheduleObj.targetPos
+    let direction = scheduleObj.direction
+
     // solution 1
     // TWEEN.removeAll()
     // let prevPosition = camera.position.clone()
@@ -1277,6 +1295,23 @@ function lookAt(targetPos, direction = 'w') {
         y: Camera.altitude,
         z: z
     }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
+}
+
+function runSchedule() {
+    // hide prev sign
+    let prevIter = iterator
+    if (prevIter !== -1) {
+        let scheduleObj = schedule[prevIter]
+        let prevSigns = scheduleObj.signs
+        prevSigns && prevSigns.map(sign => sign.visible = false)
+    }
+    // lookat next area
+    iterator = (iterator + 1) % schedule.length
+    let scheduleObj = schedule[iterator]
+    lookAt(scheduleObj)
+    // show sign
+    let curSigns = scheduleObj.signs
+    curSigns && curSigns.map(sign => sign.visible = true)
 }
 
 // toolbar - END

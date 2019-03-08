@@ -15,7 +15,7 @@
 
 .nav li:hover {
     background-color: #22aa88;
-    transition: all linear 0.2s;
+    transition: all linear 0.15s;
 }
 
 .nav li:hover a {
