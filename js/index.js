@@ -3,12 +3,12 @@
 let scene, camera, renderer, controls, threeEvent,
     clock = new THREE.Clock(), animatingAction, animateActions = {}
 
-const cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.2, Wall.lengthLong * 1.7)
+const cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.8, Wall.lengthLong * 1.8)
 const cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, Wall.lengthLong / 2)
 
-let schedule = [] // { targetPos: Vector3, direction: string, signs: Sign[] }
+let routine = [] // { targetPos: Vector3, direction: string, signs: Sign[] }
 let iterator = -1
-let intervalSchedule = -1
+let iteratorRoutine = -1
 let signs = []
 
 draw()
@@ -36,7 +36,7 @@ function draw() {
     initArea10()
     initArea11()
     initArea12()
-    initRoute()
+    initRoutine()
     initControls()
 
     // data
@@ -536,8 +536,8 @@ function initArea1() {
     hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5])
     scene.add(hintAdapter)
 
-    // add to schedule
-    schedule[0] = {
+    // add to routine
+    routine[0] = {
         targetPos: desk.position.clone(),
         direction: 's'
     }
@@ -595,8 +595,8 @@ function initArea2() {
     hintDevice.bindTo(deviceArray)
     scene.add(hintDevice)
 
-    // add to schedule
-    schedule[1] = {
+    // add to routine
+    routine[1] = {
         targetPos: desk.position.clone(),
         direction: 's',
         signs: [signAdr]
@@ -670,8 +670,8 @@ function initArea3() {
         Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius)
     scene.add(tube)
 
-    // add to schedule
-    schedule[3] = {
+    // add to routine
+    routine[3] = {
         targetPos: machine.position.clone(),
         direction: 'w',
         signs: [signHeat, signIce]
@@ -702,8 +702,8 @@ function initArea4() {
     scene.add(signRlc)
     signs.push(signRlc)
 
-    // add to schedule
-    schedule[2] = {
+    // add to routine
+    routine[2] = {
         targetPos: cabinet.position.clone(),
         direction: 's',
         signs: [signRlc]
@@ -725,8 +725,8 @@ function initArea5() {
         Wall.thickness + Area5.deskGap + Area5.deskWidth / 2)
     scene.add(computer)
 
-    // add to schedule
-    schedule[4] = {
+    // add to routine
+    routine[4] = {
         targetPos: desk.position.clone(),
         direction: 'w'
     }
@@ -782,8 +782,8 @@ function initArea6() {
     computer.rotation.y = Math.PI
     scene.add(computer)
 
-    // add to schedule
-    schedule[6] = {
+    // add to routine
+    routine[6] = {
         targetPos: desk.position.clone(),
         direction: 's'
     }
@@ -813,8 +813,8 @@ function initArea7() {
     showcase.rotation.y = Math.PI
     scene.add(showcase)
 
-    // add to schedule
-    schedule[7] = {
+    // add to routine
+    routine[7] = {
         targetPos: workbench.position.clone(),
         direction: 's'
     }
@@ -842,8 +842,8 @@ function initArea8() {
         Wall.thickness + Area8.workbenchGap + Area8.workbenchWidth / 2)
     scene.add(computer)
 
-    // add to schedule
-    schedule[5] = {
+    // add to routine
+    routine[5] = {
         targetPos: workbench.position.clone(),
         direction: 'w'
     }
@@ -875,10 +875,10 @@ function initArea9() {
         - Area9.cabinetAcWidth - Area9.cabinetMargin - Area9.cabinetDcLength / 2)
     scene.add(cabinetDC)
 
-    // add to schedule
+    // add to routine
     let centerPos = cabinetAC.position.clone()
     centerPos.z = (cabinetAC.position.z + cabinetDC.position.z) / 2
-    schedule[9] = {
+    routine[9] = {
         targetPos: centerPos,
         direction: 'a'
     }
@@ -901,10 +901,10 @@ function initArea10() {
     cabinet2.position.z -= Area10.cabinetLength + Area10.cabinetMargin
     scene.add(cabinet2)
 
-    // add to schedule
+    // add to routine
     let centerPos = cabinet1.position.clone()
     centerPos.z = (cabinet1.position.z + cabinet2.position.z) / 2
-    schedule[8] = {
+    routine[8] = {
         targetPos: centerPos,
         direction: 'a'
     }
@@ -981,10 +981,10 @@ function initArea11() {
         Wall.thickness + Area11.deskGapVertical + Area11.deskWidth / 2)
     scene.add(computer)
 
-    // add to schedule
+    // add to routine
     let centerPos = heater.position.clone()
     centerPos.z = Wall.lengthLong / 2
-    schedule[11] = {
+    routine[11] = {
         targetPos: centerPos,
         direction: 'd'
     }
@@ -1079,17 +1079,17 @@ function initArea12() {
     hintDevice.bindTo(device)
     scene.add(hintDevice)
 
-    // add to schedule
+    // add to routine
     let centerPos = group.position.clone()
     centerPos.z = Wall.lengthLong / 2
-    schedule[10] = {
+    routine[10] = {
         targetPos: centerPos,
         direction: 'a'
     }
 }
 
 // 巡视路线
-function initRoute() {
+function initRoutine() {
     // draw dashed line
     let lineMat = new THREE.LineDashedMaterial({
         color: 0x3b9611,
@@ -1219,13 +1219,13 @@ function toolWalk(target) {
     let line = scene.getObjectByName('route-line')
     line.visible = status === 'walk'
 
-    // start schedule
-    if (intervalSchedule === -1) {
-        intervalSchedule = setInterval(runSchedule, 3000)
+    // start routine
+    if (iteratorRoutine === -1) {
+        iteratorRoutine = setInterval(runRoutine, Camera.gazeTime)
     } else {
-        // pause schedule
-        clearInterval(intervalSchedule)
-        intervalSchedule = -1
+        // pause routine
+        clearInterval(iteratorRoutine)
+        iteratorRoutine = -1
     }
 }
 
@@ -1245,9 +1245,9 @@ function toolReset() {
     controls.reset()
 }
 
-function lookAt(scheduleObj) {
-    let targetPos = scheduleObj.targetPos
-    let direction = scheduleObj.direction
+function lookAt(routineObj) {
+    let targetPos = routineObj.targetPos
+    let direction = routineObj.direction
 
     // solution 1
     // TWEEN.removeAll()
@@ -1300,20 +1300,20 @@ function lookAt(scheduleObj) {
     }, 600).easing(TWEEN.Easing.Cubic.InOut).start()
 }
 
-function runSchedule() {
+function runRoutine() {
     // hide prev sign
     let prevIter = iterator
     if (prevIter !== -1) {
-        let scheduleObj = schedule[prevIter]
-        let prevSigns = scheduleObj.signs
+        let routineObj = routine[prevIter]
+        let prevSigns = routineObj.signs
         prevSigns && prevSigns.map(sign => sign.visible = false)
     }
     // lookat next area
-    iterator = (iterator + 1) % schedule.length
-    let scheduleObj = schedule[iterator]
-    lookAt(scheduleObj)
+    iterator = (iterator + 1) % routine.length
+    let routineObj = routine[iterator]
+    lookAt(routineObj)
     // show sign
-    let curSigns = scheduleObj.signs
+    let curSigns = routineObj.signs
     curSigns && curSigns.map(sign => sign.visible = true)
 }
 
@@ -1326,7 +1326,7 @@ function queryData() {
     scene.getObjectByName('sign-area3-ice-barrel').update(randomData())
     scene.getObjectByName('sign-area4-rlc').update(randomData())
 
-    setTimeout(queryData, 5000)
+    setTimeout(queryData, Data.refreshInterval)
 }
 
 function randomData() {

@@ -1,8 +1,13 @@
-"use strict"; // 相机
+"use strict";
 
+var Data = {
+  refreshInterval: 5000 // 相机
+
+};
 var Camera = {
   distance: 60,
-  altitude: 40 // 走廊
+  altitude: 40,
+  gazeTime: 3000 // 走廊
 
 };
 var Corridor = {

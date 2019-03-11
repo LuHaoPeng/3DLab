@@ -2,7 +2,7 @@
   "name": "lab_3d",
   "version": "1.0.0",
   "scripts": {
-    "build": "babel js -d dist/babel"
+    "build": "babel js -d dist/babel && uglifyjs dist/babel/*.js -o dist/bundle.min.js -c -m"
   },
   "dependencies": {
     "@babel/polyfill": "^7.2.5"

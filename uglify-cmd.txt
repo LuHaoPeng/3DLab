@@ -1,1 +1,0 @@
-uglifyjs dist/babel/*.js -o dist/bundle.min.js -c -m

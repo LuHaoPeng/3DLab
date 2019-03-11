@@ -1,9 +1,13 @@
 "use strict"
 
+const Data = {
+    refreshInterval: 5000
+}
 // 相机
 const Camera = {
     distance: 60,
-    altitude: 40
+    altitude: 40,
+    gazeTime: 3000
 }
 // 走廊
 const Corridor = {

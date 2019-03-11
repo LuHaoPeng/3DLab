@@ -8,12 +8,12 @@ var scene,
     clock = new THREE.Clock(),
     animatingAction,
     animateActions = {};
-var cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.2, Wall.lengthLong * 1.7);
+var cameraInitPosition = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, Wall.height * 2.8, Wall.lengthLong * 1.8);
 var cameraInitTarget = new THREE.Vector3(Wall.lengthLong / 2 + Wall.thickness, 0, Wall.lengthLong / 2);
-var schedule = []; // { targetPos: Vector3, direction: string, signs: Sign[] }
+var routine = []; // { targetPos: Vector3, direction: string, signs: Sign[] }
 
 var iterator = -1;
-var intervalSchedule = -1;
+var iteratorRoutine = -1;
 var signs = [];
 draw();
 
@@ -40,7 +40,7 @@ function draw() {
   initArea10();
   initArea11();
   initArea12();
-  initRoute();
+  initRoutine();
   initControls(); // data
 
   queryData(); // render
@@ -453,9 +453,9 @@ function initArea1() {
     hintMargin: 2
   });
   hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5]);
-  scene.add(hintAdapter); // add to schedule
+  scene.add(hintAdapter); // add to routine
 
-  schedule[0] = {
+  routine[0] = {
     targetPos: desk.position.clone(),
     direction: 's'
   };
@@ -513,9 +513,9 @@ function initArea2() {
     wordInOneLine: 3
   });
   hintDevice.bindTo(deviceArray);
-  scene.add(hintDevice); // add to schedule
+  scene.add(hintDevice); // add to routine
 
-  schedule[1] = {
+  routine[1] = {
     targetPos: desk.position.clone(),
     direction: 's',
     signs: [signAdr]
@@ -582,9 +582,9 @@ function initArea3() {
   tube.receiveShadow = true;
   tube.rotation.z = Math.PI / 2;
   tube.position.set(Wall.lengthLong * 1.5 + Wall.thickness * 2, Area3.tubeAltitude + Area3.tubeRadius / 2, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius);
-  scene.add(tube); // add to schedule
+  scene.add(tube); // add to routine
 
-  schedule[3] = {
+  routine[3] = {
     targetPos: machine.position.clone(),
     direction: 'w',
     signs: [signHeat, signIce]
@@ -613,9 +613,9 @@ function initArea4() {
   signRlc.name = 'sign-area4-rlc';
   signRlc.bindTo(cabinet);
   scene.add(signRlc);
-  signs.push(signRlc); // add to schedule
+  signs.push(signRlc); // add to routine
 
-  schedule[2] = {
+  routine[2] = {
     targetPos: cabinet.position.clone(),
     direction: 's',
     signs: [signRlc]
@@ -640,9 +640,9 @@ function initArea5() {
     height: PC.height
   });
   computer.position.set(deskCenterX, Area5.deskHeight + PC.height / 2, Wall.thickness + Area5.deskGap + Area5.deskWidth / 2);
-  scene.add(computer); // add to schedule
+  scene.add(computer); // add to routine
 
-  schedule[4] = {
+  routine[4] = {
     targetPos: desk.position.clone(),
     direction: 'w'
   };
@@ -696,9 +696,9 @@ function initArea6() {
   });
   computer.position.set(Wall.lengthLong + Wall.thickness - Area6.deskGapHorizontal - Area6.deskLength / 2, Area6.deskHeight + PC.height / 2, Wall.lengthLong - Wall.thickness - Area6.deskGapVertical - Area6.deskWidth / 2);
   computer.rotation.y = Math.PI;
-  scene.add(computer); // add to schedule
+  scene.add(computer); // add to routine
 
-  schedule[6] = {
+  routine[6] = {
     targetPos: desk.position.clone(),
     direction: 's'
   };
@@ -721,9 +721,9 @@ function initArea7() {
   });
   showcase.position.set(Wall.thickness + Area7.workbenchGapHorizontal + Area7.workbenchLength / 2, Area7.showcaseHeight / 2 + Area7.workbenchHeight, Wall.lengthLong - Wall.thickness - Area7.workbenchGapVertical - Area7.workbenchWidth / 2);
   showcase.rotation.y = Math.PI;
-  scene.add(showcase); // add to schedule
+  scene.add(showcase); // add to routine
 
-  schedule[7] = {
+  routine[7] = {
     targetPos: workbench.position.clone(),
     direction: 's'
   };
@@ -745,9 +745,9 @@ function initArea8() {
     height: PC.height
   });
   computer.position.set(Board.gapUp + Board.lengthUp / 2 + Wall.thickness, Area8.workbenchHeight + PC.height / 2, Wall.thickness + Area8.workbenchGap + Area8.workbenchWidth / 2);
-  scene.add(computer); // add to schedule
+  scene.add(computer); // add to routine
 
-  schedule[5] = {
+  routine[5] = {
     targetPos: workbench.position.clone(),
     direction: 'w'
   };
@@ -778,11 +778,11 @@ function initArea9() {
   cabinetDC.castShadow = true;
   cabinetDC.receiveShadow = true;
   cabinetDC.position.set(Wall.thickness + Area9.cabinetGapHorizontal + Area9.cabinetDcWidth / 2, Area9.cabinetDcHeight / 2, Wall.lengthLong - Wall.thickness - Area9.cabinetGapVertical - Area9.cabinetAcWidth - Area9.cabinetMargin - Area9.cabinetDcLength / 2);
-  scene.add(cabinetDC); // add to schedule
+  scene.add(cabinetDC); // add to routine
 
   var centerPos = cabinetAC.position.clone();
   centerPos.z = (cabinetAC.position.z + cabinetDC.position.z) / 2;
-  schedule[9] = {
+  routine[9] = {
     targetPos: centerPos,
     direction: 'a'
   };
@@ -804,11 +804,11 @@ function initArea10() {
   scene.add(cabinet1);
   var cabinet2 = cabinet1.clone();
   cabinet2.position.z -= Area10.cabinetLength + Area10.cabinetMargin;
-  scene.add(cabinet2); // add to schedule
+  scene.add(cabinet2); // add to routine
 
   var centerPos = cabinet1.position.clone();
   centerPos.z = (cabinet1.position.z + cabinet2.position.z) / 2;
-  schedule[8] = {
+  routine[8] = {
     targetPos: centerPos,
     direction: 'a'
   };
@@ -892,11 +892,11 @@ function initArea11() {
     height: PC.height
   });
   computer.position.set(-Wall.lengthLong / 2, Area11.deskHeight + PC.height / 2, Wall.thickness + Area11.deskGapVertical + Area11.deskWidth / 2);
-  scene.add(computer); // add to schedule
+  scene.add(computer); // add to routine
 
   var centerPos = heater.position.clone();
   centerPos.z = Wall.lengthLong / 2;
-  schedule[11] = {
+  routine[11] = {
     targetPos: centerPos,
     direction: 'd'
   };
@@ -987,18 +987,18 @@ function initArea12() {
     wordInOneLine: 3
   });
   hintDevice.bindTo(device);
-  scene.add(hintDevice); // add to schedule
+  scene.add(hintDevice); // add to routine
 
   var centerPos = group.position.clone();
   centerPos.z = Wall.lengthLong / 2;
-  schedule[10] = {
+  routine[10] = {
     targetPos: centerPos,
     direction: 'a'
   };
 } // 巡视路线
 
 
-function initRoute() {
+function initRoutine() {
   // draw dashed line
   var lineMat = new THREE.LineDashedMaterial({
     color: 0x3b9611,
@@ -1131,14 +1131,14 @@ function toolWalk(target) {
   switchStatus(target);
   target.title = status === 'walk' ? '暂停巡航' : '开启巡航';
   var line = scene.getObjectByName('route-line');
-  line.visible = status === 'walk'; // start schedule
+  line.visible = status === 'walk'; // start routine
 
-  if (intervalSchedule === -1) {
-    intervalSchedule = setInterval(runSchedule, 3000);
+  if (iteratorRoutine === -1) {
+    iteratorRoutine = setInterval(runRoutine, Camera.gazeTime);
   } else {
-    // pause schedule
-    clearInterval(intervalSchedule);
-    intervalSchedule = -1;
+    // pause routine
+    clearInterval(iteratorRoutine);
+    iteratorRoutine = -1;
   }
 }
 
@@ -1158,9 +1158,9 @@ function toolReset() {
   controls.reset();
 }
 
-function lookAt(scheduleObj) {
-  var targetPos = scheduleObj.targetPos;
-  var direction = scheduleObj.direction; // solution 1
+function lookAt(routineObj) {
+  var targetPos = routineObj.targetPos;
+  var direction = routineObj.direction; // solution 1
   // TWEEN.removeAll()
   // let prevPosition = camera.position.clone()
   // let prevTarget = controls.target.clone()
@@ -1213,24 +1213,24 @@ function lookAt(scheduleObj) {
   }, 600).easing(TWEEN.Easing.Cubic.InOut).start();
 }
 
-function runSchedule() {
+function runRoutine() {
   // hide prev sign
   var prevIter = iterator;
 
   if (prevIter !== -1) {
-    var _scheduleObj = schedule[prevIter];
-    var prevSigns = _scheduleObj.signs;
+    var _routineObj = routine[prevIter];
+    var prevSigns = _routineObj.signs;
     prevSigns && prevSigns.map(function (sign) {
       return sign.visible = false;
     });
   } // lookat next area
 
 
-  iterator = (iterator + 1) % schedule.length;
-  var scheduleObj = schedule[iterator];
-  lookAt(scheduleObj); // show sign
+  iterator = (iterator + 1) % routine.length;
+  var routineObj = routine[iterator];
+  lookAt(routineObj); // show sign
 
-  var curSigns = scheduleObj.signs;
+  var curSigns = routineObj.signs;
   curSigns && curSigns.map(function (sign) {
     return sign.visible = true;
   });
@@ -1243,7 +1243,7 @@ function queryData() {
   scene.getObjectByName('sign-area3-heat-barrel').update(randomData());
   scene.getObjectByName('sign-area3-ice-barrel').update(randomData());
   scene.getObjectByName('sign-area4-rlc').update(randomData());
-  setTimeout(queryData, 5000);
+  setTimeout(queryData, Data.refreshInterval);
 }
 
 function randomData() {
