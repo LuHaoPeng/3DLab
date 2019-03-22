@@ -357,7 +357,7 @@ function initShowBoards() {
 
     let boardUpRight = new ShowBoard({
         length: Board.lengthUp,
-        boardImg: 'img/showBoard/show_board_2.png'
+        boardImg: 'img/showBoard/show_board_2.jpg'
     })
     boardUpRight.position.set(Board.gapUp + Board.lengthUp * 1.5 + Wall.thickness + Board.intervalUp,
         Board.altitude + Board.height / 2, Wall.thickness + Board.thickness / 2)
@@ -365,7 +365,7 @@ function initShowBoards() {
 
     let boardDownLeft = new ShowBoard({
         length: Board.lengthDown,
-        boardImg: 'img/showBoard/show_board_3.png'
+        boardImg: 'img/showBoard/show_board_3.jpg'
     })
     boardDownLeft.position.set(Wall.lengthLong + Wall.thickness * 2 + Board.gapDown + Board.lengthDown / 2,
         Board.altitude + Board.height / 2, Wall.lengthLong - Wall.thickness - Board.thickness / 2)
@@ -374,7 +374,7 @@ function initShowBoards() {
 
     let boardDownRight = new ShowBoard({
         length: Board.lengthDown,
-        boardImg: 'img/showBoard/show_board_4.png'
+        boardImg: 'img/showBoard/show_board_4.jpg'
     })
     boardDownRight.position.set(Wall.lengthLong + Wall.thickness * 2 + Board.gapDown + Board.lengthDown * 1.5 + Board.intervalDown,
         Board.altitude + Board.height / 2, Wall.lengthLong - Wall.thickness - Board.thickness / 2)
@@ -383,7 +383,7 @@ function initShowBoards() {
 
     let boardRight = new ShowBoard({
         length: Board.lengthVertical,
-        boardImg: 'img/showBoard/show_board_5.png'
+        boardImg: 'img/showBoard/show_board_5.jpg'
     })
     boardRight.position.set(Wall.lengthLong * 2 + Wall.thickness * 2 - Board.thickness / 2,
         Board.altitude + Board.height / 2, Wall.lengthLong - Wall.thickness - Board.gapVertical - Board.lengthVertical / 2)
@@ -395,6 +395,7 @@ function initShowBoards() {
     let boardSecondaryRight = new ShowBoard({
         length: Board.lengthSecondary,
         height: Board.heightSecondary,
+        boardImg: 'img/showBoard/show_board_6.jpg',
         marginX: 0.5
     })
     boardSecondaryRight.position.set(-Board.thickness / 2, Board.altitude + Board.heightSecondary / 2,
@@ -445,6 +446,7 @@ function initShowBoards() {
     let boardSecondaryLeft = new ShowBoard({
         length: Board.lengthSecondary,
         height: Board.heightSecondary,
+        boardImg: 'img/showBoard/show_board_7.jpg',
         marginX: 0.5
     })
     boardSecondaryLeft.position.set(Board.thickness / 2 - Wall.lengthLong, Board.altitude + Board.heightSecondary / 2,
