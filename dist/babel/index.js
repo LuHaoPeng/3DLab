@@ -367,6 +367,7 @@ function initShowBoards() {
   var boardSecondaryDownLeft = new ShowBoard({
     length: Board.lengthSecondary,
     height: Board.heightSecondary,
+    boardImg: 'img/showBoard/show_board_8.jpg',
     marginX: 0.5
   });
   boardSecondaryDownLeft.position.set(-Board.gapSecondaryDown - Board.intervalSecondary * 3 - Board.lengthSecondary * 3.5, Board.altitude + Board.heightSecondary / 2, Wall.lengthLong - Wall.thickness - Board.thickness / 2);
