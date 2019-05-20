@@ -464,6 +464,13 @@ function initArea1() {
         Wall.lengthLong - Wall.thickness - Area1.deskGap - Area1.deskWidth / 2)
     scene.add(desk)
 
+    // 状态标识
+    let signDevice = new Sign(Config.sign.multi)
+    signDevice.name = 'sign-area1-device'
+    signDevice.bindTo(desk)
+    scene.add(signDevice)
+    signs.push(signDevice)
+
     let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(area1BoardCenterX, Area1.deskHeight + PC.height / 2,
         Wall.lengthLong - Wall.thickness - Area1.deskGap - Area1.deskWidth + Area1.pcMargin + PC.width / 2)
@@ -496,14 +503,6 @@ function initArea1() {
     device5.position.x += Device.length + Area1.deviceInterval
     scene.add(device5)
 
-    // 提示文字 - 终端
-    let hintDevice = new Hint({
-        text: '需求响应终端',
-        wordInOneLine: 3
-    })
-    hintDevice.bindTo([device3, device2, device1, device4, device5])
-    scene.add(hintDevice)
-
     // 适配器
     let adapter1 = new THREE.Mesh(new THREE.BoxGeometry(Adapter.length, Adapter.height, Adapter.width),
         new THREE.MeshPhongMaterial({ color: 0x243c42 }))
@@ -530,15 +529,6 @@ function initArea1() {
     adapter5.position.x -= Adapter.length + Area1.deviceInterval
     scene.add(adapter5)
 
-    // 提示文字 - 终端
-    let hintAdapter = new Hint({
-        text: '通信适配器',
-        wordInOneLine: 5,
-        hintMargin: 2
-    })
-    hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5])
-    scene.add(hintAdapter)
-
     // add to routine
     routine[0] = {
         targetPos: desk.position.clone(),
@@ -554,11 +544,7 @@ function initArea2() {
         Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth / 2)
     scene.add(desk)
 
-    let signAdr = new Sign({
-        nameText: 'OpenADR',
-        statusText: '运行',
-        dataText: '2kW'
-    })
+    let signAdr = new Sign(Config.sign.multi)
     signAdr.name = 'sign-area2-adr'
     signAdr.bindTo(desk)
     scene.add(signAdr)
@@ -582,21 +568,11 @@ function initArea2() {
     scene.add(device)
 
     // 复制4份
-    let deviceArray = [device]
     for (let i = 1; i <= 4; i++) {
         let deviceCopy = device.clone()
         deviceCopy.position.x += i * (deviceInterval + Device.length)
         scene.add(deviceCopy)
-        deviceArray.push(deviceCopy)
     }
-
-    // 提示文字 - 终端
-    let hintDevice = new Hint({
-        text: '需求响应终端',
-        wordInOneLine: 3
-    })
-    hintDevice.bindTo(deviceArray)
-    scene.add(hintDevice)
 
     // add to routine
     routine[1] = {
@@ -623,11 +599,7 @@ function initArea3() {
         Area3.barrelHeight / 2 + Floor.thickness, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius)
     scene.add(heatBarrel)
 
-    let signHeat = new Sign({
-        nameText: '蓄热空调',
-        statusText: '运行',
-        dataText: '10kW'
-    })
+    let signHeat = new Sign({ nameText: '蓄热空调' })
     signHeat.name = 'sign-area3-heat-barrel'
     signHeat.bindTo(heatBarrel)
     scene.add(signHeat)
@@ -638,12 +610,7 @@ function initArea3() {
     iceBarrel.position.x = Wall.lengthLong * 2 + Wall.thickness * 2 - Area3.barrelGapHorizontal - Area3.barrelRadius
     scene.add(iceBarrel)
 
-    let signIce = new Sign({
-        nameText: '蓄冷空调',
-        statusText: '停机',
-        dataText: '0kW',
-        offline: true
-    })
+    let signIce = new Sign({ nameText: '蓄冷空调' })
     signIce.name = 'sign-area3-ice-barrel'
     signIce.bindTo(iceBarrel)
     scene.add(signIce)
@@ -695,11 +662,7 @@ function initArea4() {
         Area4.cabinetHeight / 2, Wall.lengthLong - Wall.thickness - Area4.cabinetGapVertical - Area4.cabinetWidth / 2)
     scene.add(cabinet)
 
-    let signRlc = new Sign({
-        nameText: '可调负载',
-        statusText: '运行',
-        dataText: '5kW'
-    })
+    let signRlc = new Sign({ nameText: '可调负载' })
     signRlc.name = 'sign-area4-rlc'
     signRlc.bindTo(cabinet)
     scene.add(signRlc)
@@ -1074,14 +1037,6 @@ function initArea12() {
         Wall.lengthLong - Wall.thickness - Area12.deskGapVertical - Area12.deskWidth / 2)
     scene.add(device)
 
-    // 提示文字 - 终端
-    let hintDevice = new Hint({
-        text: '非侵入式终端',
-        wordInOneLine: 3
-    })
-    hintDevice.bindTo(device)
-    scene.add(hintDevice)
-
     // add to routine
     let centerPos = group.position.clone()
     centerPos.z = Wall.lengthLong / 2
@@ -1324,7 +1279,31 @@ function runRoutine() {
 
 // query data
 function queryData() {
-    scene.getObjectByName('sign-area2-adr').update(randomData())
+    scene.getObjectByName('sign-area1-device').update({
+        boardType: randomIn('on', 'pause', 'off'),
+        group: [
+            ['终端1', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
+            ['终端2', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
+            ['终端3', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
+            ['终端4', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
+            ['终端5', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
+            ['适配器1', randomIn('未连接', '已连接')],
+            ['适配器2', randomIn('未连接', '已连接')],
+            ['适配器3', randomIn('未连接', '已连接')],
+            ['适配器4', randomIn('未连接', '已连接')],
+            ['适配器5', randomIn('未连接', '已连接')],
+        ],
+    })
+    scene.getObjectByName('sign-area2-adr').update({
+        boardType: randomIn('on', 'pause', 'off'),
+        group: [
+            ['终端1', randomIn('未连接', '已连接')],
+            ['终端2', randomIn('未连接', '已连接')],
+            ['终端3', randomIn('未连接', '已连接')],
+            ['终端4', randomIn('未连接', '已连接')],
+            ['终端5', randomIn('未连接', '已连接')],
+        ],
+    })
     scene.getObjectByName('sign-area3-heat-barrel').update(randomData())
     scene.getObjectByName('sign-area3-ice-barrel').update(randomData())
     scene.getObjectByName('sign-area4-rlc').update(randomData())

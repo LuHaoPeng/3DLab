@@ -1,5 +1,16 @@
 "use strict"
 
+// 设置
+const Config = {
+    sign: {
+        multi: {
+            fontSizeSecond: 24,
+            marginX: 15,
+            marginY: 10
+        }
+    }
+}
+// 数据
 const Data = {
     refreshInterval: 5000
 }

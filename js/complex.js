@@ -281,7 +281,17 @@ Showcase.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     setValues
 })
 
-// 复合体 - 提示文字
+/**
+ * 复合体 - 提示文字
+ * 
+ * @example
+    let hintDevice = new Hint({
+        text: '需求响应终端',
+        wordInOneLine: 3
+    })
+    hintDevice.bindTo([device1, device2, device3, device4, device5])
+    scene.add(hintDevice)
+ */
 const Hint = function (options = {}) {
     THREE.Group.call(this)
 
@@ -517,7 +527,8 @@ const Sign = function (options = {}) {
         magic: 30,
         scaleRate: 15,
         boardType: 'on', // 'on', 'off', 'pause'
-        wallHeight: 30
+        wallHeight: 30,
+        group: []
     }, options)
 
     this.setValues(options)
@@ -527,11 +538,27 @@ const Sign = function (options = {}) {
 Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     constructor: Status,
     init() {
-        this.width = this.calcWidth(this.nameText, this.statusText, this.dataText) + this.marginX * 2
-        this.height = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4
-
+        this.generateTexts()
         this.createBoard()
         this.createFace()
+    },
+    generateTexts() {
+        if (this.group.length > 0) {
+            // wrap & convert
+            let textObjs = this.group.map(arr => arr.map(text => ({ text })))
+            this.width = this.calcWidth(textObjs)
+            this.height = this.fontSizeSecond * textObjs.length + this.marginY * (textObjs.length + 1)
+            this.texts = textObjs
+        } else {
+            let textObjs = [
+                [{ text: this.nameText, isMain: true }],
+                [{ text: this.statusText }],
+                [{ text: this.dataText }]
+            ]
+            this.width = this.calcWidth(textObjs)
+            this.height = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * (textObjs.length + 1)
+            this.texts = textObjs
+        }
     },
     setValues,
     bindTo(obj) {
@@ -544,15 +571,22 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         this.position.copy(middleObj.position)
         this.position.y = this.wallHeight + (this.height / 2 + this.magic) / this.scaleRate
     },
-    calcWidth(nameText, statusText, dataText) {
+    calcWidth(arr) {
         let canvas = document.createElement('canvas')
         let ctx = canvas.getContext('2d')
-        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
-        const widthName = ctx.measureText(nameText).width
-        ctx.font = `${this.fontSizeSecond}px ${this.font}`
-        const widthStatus = ctx.measureText(statusText).width
-        const widthData = ctx.measureText(dataText).width
-        return Math.max(widthName, widthStatus, widthData)
+        let widths = arr.map(childArr => {
+            let mergeWidth = 0
+            childArr.map(obj => {
+                if (obj.isMain) {
+                    ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+                } else {
+                    ctx.font = `${this.fontSizeSecond}px ${this.font}`
+                }
+                mergeWidth += ctx.measureText(obj.text).width
+            })
+            return mergeWidth + (childArr.length + 1) * this.marginX
+        })
+        return Math.max(...widths)
     },
     pickColor() {
         switch (this.boardType.toLowerCase()) {
@@ -626,21 +660,37 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         canvas.width = w
         canvas.height = h
 
-        // draw name text
-        ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'bottom'
-        ctx.fillStyle = this.fontColorMain
-        let top = this.fontSizeMain + this.marginY
-        ctx.fillText(this.nameText, w / 2, top)
-        // draw status text
-        ctx.font = `${this.fontSizeSecond}px ${this.font}`
-        ctx.fillStyle = this.pickColor().font
-        top += this.fontSizeSecond + this.marginY
-        ctx.fillText(this.statusText, w / 2, top)
-        // draw data text
-        top += this.fontSizeSecond + this.marginY
-        ctx.fillText(this.dataText, w / 2, top)
+        if (this.group.length > 0) {
+            // draw group texts
+            ctx.font = `${this.fontSizeSecond}px ${this.font}`
+            ctx.textAlign = 'left'
+            ctx.textBaseline = 'bottom'
+            this.texts.map((arr, idxOuter) => {
+                let y = (this.fontSizeSecond + this.marginY) * (idxOuter + 1)
+                let x = this.marginX
+                arr.map((obj, idxInner) => {
+                    ctx.fillStyle = !idxInner ? this.fontColorMain : this.pickColor().font
+                    ctx.fillText(obj.text, x, y)
+                    x += ctx.measureText(obj.text).width + this.marginX
+                })
+            })
+        } else {
+            // draw name text
+            ctx.font = `bold ${this.fontSizeMain}px ${this.font}`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'bottom'
+            ctx.fillStyle = this.fontColorMain
+            let top = this.fontSizeMain + this.marginY
+            ctx.fillText(this.nameText, w / 2, top)
+            // draw status text
+            ctx.font = `${this.fontSizeSecond}px ${this.font}`
+            ctx.fillStyle = this.pickColor().font
+            top += this.fontSizeSecond + this.marginY
+            ctx.fillText(this.statusText, w / 2, top)
+            // draw data text
+            top += this.fontSizeSecond + this.marginY
+            ctx.fillText(this.dataText, w / 2, top)
+        }
 
         // create texture
         let texture = new THREE.CanvasTexture(canvas)
@@ -666,12 +716,14 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     update({ name = this.nameText,
         status = this.statusText,
         data = this.dataText,
-        boardType = this.boardType } = {}) {
+        boardType = this.boardType,
+        group = this.group } = {}) {
         // update properties
         this.nameText = name
         this.statusText = status
         this.dataText = data
         this.boardType = boardType
+        this.group = group
         // create
         this.init()
     }
