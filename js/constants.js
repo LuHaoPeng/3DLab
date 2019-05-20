@@ -1,5 +1,10 @@
 "use strict"
+const PREFIX = 'http://172.16.23.197:8080/demand/'
 
+const Url = {
+    termStatus: PREFIX + 'main/emulatetest_queryTerminal.action',
+    deviceStatus: PREFIX + 'main/emulatetest_queryByDevice.action'
+}
 // 设置
 const Config = {
     sign: {

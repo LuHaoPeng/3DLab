@@ -1,5 +1,21 @@
 "use strict";
 
+var PREFIX = 'http://172.16.23.197:8080/demand/';
+var Url = {
+  termStatus: PREFIX + 'main/emulatetest_queryTerminal.action',
+  deviceStatus: PREFIX + 'main/emulatetest_queryByDevice.action' // 设置
+
+};
+var Config = {
+  sign: {
+    multi: {
+      fontSizeSecond: 24,
+      marginX: 15,
+      marginY: 10
+    }
+  } // 数据
+
+};
 var Data = {
   refreshInterval: 5000 // 相机
 

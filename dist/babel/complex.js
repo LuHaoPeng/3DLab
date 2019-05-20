@@ -4,6 +4,14 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 var setValues = function setValues(parameters) {
   var _this = this;
 
@@ -283,7 +291,18 @@ Showcase.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     }
   },
   setValues: setValues
-}); // 复合体 - 提示文字
+});
+/**
+ * 复合体 - 提示文字
+ * 
+ * @example
+    let hintDevice = new Hint({
+        text: '需求响应终端',
+        wordInOneLine: 3
+    })
+    hintDevice.bindTo([device1, device2, device3, device4, device5])
+    scene.add(hintDevice)
+ */
 
 var Hint = function Hint() {
   var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -535,7 +554,8 @@ var Sign = function Sign() {
     scaleRate: 15,
     boardType: 'on',
     // 'on', 'off', 'pause'
-    wallHeight: 30
+    wallHeight: 30,
+    group: []
   }, options);
   this.setValues(options);
   this.visible = false;
@@ -545,10 +565,36 @@ var Sign = function Sign() {
 Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
   constructor: Status,
   init: function init() {
-    this.width = this.calcWidth(this.nameText, this.statusText, this.dataText) + this.marginX * 2;
-    this.height = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * 4;
+    this.generateTexts();
     this.createBoard();
     this.createFace();
+  },
+  generateTexts: function generateTexts() {
+    if (this.group.length > 0) {
+      // wrap & convert
+      var textObjs = this.group.map(function (arr) {
+        return arr.map(function (text) {
+          return {
+            text: text
+          };
+        });
+      });
+      this.width = this.calcWidth(textObjs);
+      this.height = this.fontSizeSecond * textObjs.length + this.marginY * (textObjs.length + 1);
+      this.texts = textObjs;
+    } else {
+      var _textObjs = [[{
+        text: this.nameText,
+        isMain: true
+      }], [{
+        text: this.statusText
+      }], [{
+        text: this.dataText
+      }]];
+      this.width = this.calcWidth(_textObjs);
+      this.height = this.fontSizeMain + this.fontSizeSecond * 2 + this.marginY * (_textObjs.length + 1);
+      this.texts = _textObjs;
+    }
   },
   setValues: setValues,
   bindTo: function bindTo(obj) {
@@ -561,15 +607,25 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     this.position.copy(middleObj.position);
     this.position.y = this.wallHeight + (this.height / 2 + this.magic) / this.scaleRate;
   },
-  calcWidth: function calcWidth(nameText, statusText, dataText) {
+  calcWidth: function calcWidth(arr) {
+    var _this2 = this;
+
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
-    var widthName = ctx.measureText(nameText).width;
-    ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
-    var widthStatus = ctx.measureText(statusText).width;
-    var widthData = ctx.measureText(dataText).width;
-    return Math.max(widthName, widthStatus, widthData);
+    var widths = arr.map(function (childArr) {
+      var mergeWidth = 0;
+      childArr.map(function (obj) {
+        if (obj.isMain) {
+          ctx.font = "bold ".concat(_this2.fontSizeMain, "px ").concat(_this2.font);
+        } else {
+          ctx.font = "".concat(_this2.fontSizeSecond, "px ").concat(_this2.font);
+        }
+
+        mergeWidth += ctx.measureText(obj.text).width;
+      });
+      return mergeWidth + (childArr.length + 1) * _this2.marginX;
+    });
+    return Math.max.apply(Math, _toConsumableArray(widths));
   },
   pickColor: function pickColor() {
     switch (this.boardType.toLowerCase()) {
@@ -638,28 +694,48 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
     this.add(sign);
   },
   createFace: function createFace() {
+    var _this3 = this;
+
     // calculate width & height
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var w = this.width;
     var h = this.height;
     canvas.width = w;
-    canvas.height = h; // draw name text
+    canvas.height = h;
 
-    ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillStyle = this.fontColorMain;
-    var top = this.fontSizeMain + this.marginY;
-    ctx.fillText(this.nameText, w / 2, top); // draw status text
+    if (this.group.length > 0) {
+      // draw group texts
+      ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      this.texts.map(function (arr, idxOuter) {
+        var y = (_this3.fontSizeSecond + _this3.marginY) * (idxOuter + 1);
+        var x = _this3.marginX;
+        arr.map(function (obj, idxInner) {
+          ctx.fillStyle = !idxInner ? _this3.fontColorMain : _this3.pickColor().font;
+          ctx.fillText(obj.text, x, y);
+          x += ctx.measureText(obj.text).width + _this3.marginX;
+        });
+      });
+    } else {
+      // draw name text
+      ctx.font = "bold ".concat(this.fontSizeMain, "px ").concat(this.font);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = this.fontColorMain;
+      var top = this.fontSizeMain + this.marginY;
+      ctx.fillText(this.nameText, w / 2, top); // draw status text
 
-    ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
-    ctx.fillStyle = this.pickColor().font;
-    top += this.fontSizeSecond + this.marginY;
-    ctx.fillText(this.statusText, w / 2, top); // draw data text
+      ctx.font = "".concat(this.fontSizeSecond, "px ").concat(this.font);
+      ctx.fillStyle = this.pickColor().font;
+      top += this.fontSizeSecond + this.marginY;
+      ctx.fillText(this.statusText, w / 2, top); // draw data text
 
-    top += this.fontSizeSecond + this.marginY;
-    ctx.fillText(this.dataText, w / 2, top); // create texture
+      top += this.fontSizeSecond + this.marginY;
+      ctx.fillText(this.dataText, w / 2, top);
+    } // create texture
+
 
     var texture = new THREE.CanvasTexture(canvas); // remove prev
 
@@ -691,13 +767,16 @@ Sign.prototype = Object.assign(Object.create(THREE.Group.prototype), {
         _ref2$data = _ref2.data,
         data = _ref2$data === void 0 ? this.dataText : _ref2$data,
         _ref2$boardType = _ref2.boardType,
-        boardType = _ref2$boardType === void 0 ? this.boardType : _ref2$boardType;
+        boardType = _ref2$boardType === void 0 ? this.boardType : _ref2$boardType,
+        _ref2$group = _ref2.group,
+        group = _ref2$group === void 0 ? this.group : _ref2$group;
 
     // update properties
     this.nameText = name;
     this.statusText = status;
     this.dataText = data;
-    this.boardType = boardType; // create
+    this.boardType = boardType;
+    this.group = group; // create
 
     this.init();
   }

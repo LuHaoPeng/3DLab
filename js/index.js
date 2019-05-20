@@ -544,12 +544,6 @@ function initArea2() {
         Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth / 2)
     scene.add(desk)
 
-    let signAdr = new Sign(Config.sign.multi)
-    signAdr.name = 'sign-area2-adr'
-    signAdr.bindTo(desk)
-    scene.add(signAdr)
-    signs.push(signAdr)
-
     let computer = new Computer({ length: PC.length, width: PC.width, height: PC.height })
     computer.position.set(area2BoardCenterX, Area2.deskHeight + PC.height / 2,
         Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth + Area2.pcMargin + PC.width / 2)
@@ -577,8 +571,7 @@ function initArea2() {
     // add to routine
     routine[1] = {
         targetPos: desk.position.clone(),
-        direction: 's',
-        signs: [signAdr]
+        direction: 's'
     }
 }
 
@@ -1279,36 +1272,78 @@ function runRoutine() {
 
 // query data
 function queryData() {
-    scene.getObjectByName('sign-area1-device').update({
-        boardType: randomIn('on', 'pause', 'off'),
-        group: [
-            ['终端1', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
-            ['终端2', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
-            ['终端3', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
-            ['终端4', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
-            ['终端5', randomIn('运行', '离线'), (Math.random() * 15).toFixed(1) + 'kW'],
-            ['适配器1', randomIn('未连接', '已连接')],
-            ['适配器2', randomIn('未连接', '已连接')],
-            ['适配器3', randomIn('未连接', '已连接')],
-            ['适配器4', randomIn('未连接', '已连接')],
-            ['适配器5', randomIn('未连接', '已连接')],
-        ],
+    // 终端数据
+    let termArray = []
+    $.post(Url.termStatus, {
+        trid: 1,
+        usertype: 2
+    }, function(res) {
+        termArray.push(['终端1', res.drter.statusStr])
+        if (termArray.length >= 4) {
+            updateData('sign-area1-device', { group: termArray })
+        }
     })
-    scene.getObjectByName('sign-area2-adr').update({
-        boardType: randomIn('on', 'pause', 'off'),
-        group: [
-            ['终端1', randomIn('未连接', '已连接')],
-            ['终端2', randomIn('未连接', '已连接')],
-            ['终端3', randomIn('未连接', '已连接')],
-            ['终端4', randomIn('未连接', '已连接')],
-            ['终端5', randomIn('未连接', '已连接')],
-        ],
+    $.post(Url.termStatus, {
+        trid: 2,
+        usertype: 2
+    }, function(res) {
+        termArray.push(['终端2', res.drter.statusStr])
+        if (termArray.length >= 4) {
+            updateData('sign-area1-device', { group: termArray })
+        }
     })
-    scene.getObjectByName('sign-area3-heat-barrel').update(randomData())
-    scene.getObjectByName('sign-area3-ice-barrel').update(randomData())
-    scene.getObjectByName('sign-area4-rlc').update(randomData())
+    $.post(Url.termStatus, {
+        trid: 3,
+        usertype: 2
+    }, function(res) {
+        termArray.push(['终端3', res.drter.statusStr])
+        if (termArray.length >= 4) {
+            updateData('sign-area1-device', { group: termArray })
+        }
+    })
+    $.post(Url.termStatus, {
+        trid: 4,
+        usertype: 2
+    }, function(res) {
+        termArray.push(['终端4', res.drter.statusStr])
+        if (termArray.length >= 4) {
+            updateData('sign-area1-device', { group: termArray })
+        }
+    })
+
+    // 蓄热
+    $.post(Url.deviceStatus, {
+        deviceid: 1,
+        devicetype: 40
+    }, function(res) {
+        updateData('sign-area3-heat-barrel', randomData())
+    })
+
+    // 蓄冷
+    $.post(Url.deviceStatus, {
+        deviceid: 1,
+        devicetype: 41
+    }, function(res) {
+        updateData('sign-area3-ice-barrel', randomData())
+    })
+
+    // rlc
+    $.post(Url.deviceStatus, {
+        deviceid: 1,
+        devicetype: 42
+    }, function(res) {
+        updateData('sign-area4-rlc', {
+            status: res.drelc.funstatusStr,
+            data: '',
+            boardType: ['off', 'on'][res.drelc.funstatus]
+        })
+    })
 
     setTimeout(queryData, Data.refreshInterval)
+}
+
+function updateData(name, data) {
+    scene.getObjectByName(name).update(data)
 }
 
 function randomData() {

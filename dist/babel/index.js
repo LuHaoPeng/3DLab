@@ -393,7 +393,13 @@ function initArea1() {
     width: Area1.deskWidth
   });
   desk.position.set(area1BoardCenterX, Area1.deskHeight / 2, Wall.lengthLong - Wall.thickness - Area1.deskGap - Area1.deskWidth / 2);
-  scene.add(desk);
+  scene.add(desk); // 状态标识
+
+  var signDevice = new Sign(Config.sign.multi);
+  signDevice.name = 'sign-area1-device';
+  signDevice.bindTo(desk);
+  scene.add(signDevice);
+  signs.push(signDevice);
   var computer = new Computer({
     length: PC.length,
     width: PC.width,
@@ -421,14 +427,7 @@ function initArea1() {
   scene.add(device4);
   var device5 = device4.clone();
   device5.position.x += Device.length + Area1.deviceInterval;
-  scene.add(device5); // 提示文字 - 终端
-
-  var hintDevice = new Hint({
-    text: '需求响应终端',
-    wordInOneLine: 3
-  });
-  hintDevice.bindTo([device3, device2, device1, device4, device5]);
-  scene.add(hintDevice); // 适配器
+  scene.add(device5); // 适配器
 
   var adapter1 = new THREE.Mesh(new THREE.BoxGeometry(Adapter.length, Adapter.height, Adapter.width), new THREE.MeshPhongMaterial({
     color: 0x243c42
@@ -448,15 +447,7 @@ function initArea1() {
   scene.add(adapter4);
   var adapter5 = adapter4.clone();
   adapter5.position.x -= Adapter.length + Area1.deviceInterval;
-  scene.add(adapter5); // 提示文字 - 终端
-
-  var hintAdapter = new Hint({
-    text: '通信适配器',
-    wordInOneLine: 5,
-    hintMargin: 2
-  });
-  hintAdapter.bindTo([adapter3, adapter2, adapter1, adapter4, adapter5]);
-  scene.add(hintAdapter); // add to routine
+  scene.add(adapter5); // add to routine
 
   routine[0] = {
     targetPos: desk.position.clone(),
@@ -474,15 +465,6 @@ function initArea2() {
   });
   desk.position.set(area2BoardCenterX, Area2.deskHeight / 2, Wall.lengthLong - Wall.thickness - Area2.deskGap - Area2.deskWidth / 2);
   scene.add(desk);
-  var signAdr = new Sign({
-    nameText: 'OpenADR',
-    statusText: '运行',
-    dataText: '2kW'
-  });
-  signAdr.name = 'sign-area2-adr';
-  signAdr.bindTo(desk);
-  scene.add(signAdr);
-  signs.push(signAdr);
   var computer = new Computer({
     length: PC.length,
     width: PC.width,
@@ -501,27 +483,16 @@ function initArea2() {
   device.position.set(area2BoardCenterX - (Area2.deskLength - deviceInterval - Device.length) / 2, Area2.deskHeight + Device.height / 2, Wall.lengthLong - Wall.thickness - Area2.deskGap - deviceInterval / 2 - Device.width / 2);
   scene.add(device); // 复制4份
 
-  var deviceArray = [device];
-
   for (var i = 1; i <= 4; i++) {
     var deviceCopy = device.clone();
     deviceCopy.position.x += i * (deviceInterval + Device.length);
     scene.add(deviceCopy);
-    deviceArray.push(deviceCopy);
-  } // 提示文字 - 终端
+  } // add to routine
 
-
-  var hintDevice = new Hint({
-    text: '需求响应终端',
-    wordInOneLine: 3
-  });
-  hintDevice.bindTo(deviceArray);
-  scene.add(hintDevice); // add to routine
 
   routine[1] = {
     targetPos: desk.position.clone(),
-    direction: 's',
-    signs: [signAdr]
+    direction: 's'
   };
 } // 3 - 蓄冷蓄热仿真设备
 
@@ -542,9 +513,7 @@ function initArea3() {
   heatBarrel.position.set(Wall.lengthLong + Wall.thickness * 2 + Area3.barrelGapHorizontal + Area3.barrelRadius, Area3.barrelHeight / 2 + Floor.thickness, Wall.thickness + Area3.barrelGapVertical + Area3.barrelRadius);
   scene.add(heatBarrel);
   var signHeat = new Sign({
-    nameText: '蓄热空调',
-    statusText: '运行',
-    dataText: '10kW'
+    nameText: '蓄热空调'
   });
   signHeat.name = 'sign-area3-heat-barrel';
   signHeat.bindTo(heatBarrel);
@@ -555,10 +524,7 @@ function initArea3() {
   iceBarrel.position.x = Wall.lengthLong * 2 + Wall.thickness * 2 - Area3.barrelGapHorizontal - Area3.barrelRadius;
   scene.add(iceBarrel);
   var signIce = new Sign({
-    nameText: '蓄冷空调',
-    statusText: '停机',
-    dataText: '0kW',
-    offline: true
+    nameText: '蓄冷空调'
   });
   signIce.name = 'sign-area3-ice-barrel';
   signIce.bindTo(iceBarrel);
@@ -609,9 +575,7 @@ function initArea4() {
   cabinet.position.set(Wall.lengthLong + Wall.thickness * 2 + Area4.cabinetGapHorizontal + Area4.cabinetLength / 2, Area4.cabinetHeight / 2, Wall.lengthLong - Wall.thickness - Area4.cabinetGapVertical - Area4.cabinetWidth / 2);
   scene.add(cabinet);
   var signRlc = new Sign({
-    nameText: '可调负载',
-    statusText: '运行',
-    dataText: '5kW'
+    nameText: '可调负载'
   });
   signRlc.name = 'sign-area4-rlc';
   signRlc.bindTo(cabinet);
@@ -983,14 +947,7 @@ function initArea12() {
   device.receiveShadow = true;
   device.rotation.y = Math.PI / 2;
   device.position.set(Area12.deskGapHorizontal + Area12.deskLength / 2 - Wall.lengthLong, Area12.deskHeight + Device.height / 2, Wall.lengthLong - Wall.thickness - Area12.deskGapVertical - Area12.deskWidth / 2);
-  scene.add(device); // 提示文字 - 终端
-
-  var hintDevice = new Hint({
-    text: '非侵入式终端',
-    wordInOneLine: 3
-  });
-  hintDevice.bindTo(device);
-  scene.add(hintDevice); // add to routine
+  scene.add(device); // add to routine
 
   var centerPos = group.position.clone();
   centerPos.z = Wall.lengthLong / 2;
@@ -1242,11 +1199,86 @@ function runRoutine() {
 
 
 function queryData() {
-  scene.getObjectByName('sign-area2-adr').update(randomData());
-  scene.getObjectByName('sign-area3-heat-barrel').update(randomData());
-  scene.getObjectByName('sign-area3-ice-barrel').update(randomData());
-  scene.getObjectByName('sign-area4-rlc').update(randomData());
+  // 终端数据
+  var termArray = [];
+  $.post(Url.termStatus, {
+    trid: 1,
+    usertype: 2
+  }, function (res) {
+    termArray.push(['终端1', res.drter.statusStr]);
+
+    if (termArray.length >= 4) {
+      updateData('sign-area1-device', {
+        group: termArray
+      });
+    }
+  });
+  $.post(Url.termStatus, {
+    trid: 2,
+    usertype: 2
+  }, function (res) {
+    termArray.push(['终端2', res.drter.statusStr]);
+
+    if (termArray.length >= 4) {
+      updateData('sign-area1-device', {
+        group: termArray
+      });
+    }
+  });
+  $.post(Url.termStatus, {
+    trid: 3,
+    usertype: 2
+  }, function (res) {
+    termArray.push(['终端3', res.drter.statusStr]);
+
+    if (termArray.length >= 4) {
+      updateData('sign-area1-device', {
+        group: termArray
+      });
+    }
+  });
+  $.post(Url.termStatus, {
+    trid: 4,
+    usertype: 2
+  }, function (res) {
+    termArray.push(['终端4', res.drter.statusStr]);
+
+    if (termArray.length >= 4) {
+      updateData('sign-area1-device', {
+        group: termArray
+      });
+    }
+  }); // 蓄热
+
+  $.post(Url.deviceStatus, {
+    deviceid: 1,
+    devicetype: 40
+  }, function (res) {
+    updateData('sign-area3-heat-barrel', randomData());
+  }); // 蓄冷
+
+  $.post(Url.deviceStatus, {
+    deviceid: 1,
+    devicetype: 41
+  }, function (res) {
+    updateData('sign-area3-ice-barrel', randomData());
+  }); // rlc
+
+  $.post(Url.deviceStatus, {
+    deviceid: 1,
+    devicetype: 42
+  }, function (res) {
+    updateData('sign-area4-rlc', {
+      status: res.drelc.funstatusStr,
+      data: '',
+      boardType: ['off', 'on'][res.drelc.funstatus]
+    });
+  });
   setTimeout(queryData, Data.refreshInterval);
+}
+
+function updateData(name, data) {
+  scene.getObjectByName(name).update(data);
 }
 
 function randomData() {
